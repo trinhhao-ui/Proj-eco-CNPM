@@ -1,98 +1,73 @@
 <!DOCTYPE html>
-<html lang="vi"
-      xmlns:th="http://www.thymeleaf.org">
-
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<div th:fragment="product-card(product)"
-     class="card h-100 border-0 shadow-sm">
+<div th:fragment="product-card(product)" class="card product-card h-100 border-0 shadow-sm">
+    <!-- Image Wrapper with Zoom Effect -->
+    <a th:href="@{/products/{id}(id=${product.id})}" class="product-img-wrapper text-decoration-none">
+        <span th:if="${product.stock > 0 and product.price != null and product.price <= 5000000}" class="badge-tag bg-warning text-dark">
+            <i class="bi bi-fire me-1"></i>Giá Tốt
+        </span>
+        <span th:if="${product.stock > 0 and (product.price == null or product.price > 5000000)}" class="badge-tag bg-primary text-white">
+            <i class="bi bi-stars me-1"></i>Cao Cấp
+        </span>
+        <span th:if="${product.stock == 0}" class="badge-tag bg-danger text-white">
+            Hết Hàng
+        </span>
 
-    <!-- Product image -->
-    <a th:href="@{/products/{id}(id=${product.id})}"
-       class="text-decoration-none">
-
-        <div class="ratio ratio-1x1 bg-light">
-
-            <img th:if="${product.imageUrl != null
-                         and !product.imageUrl.isEmpty()}"
-                 th:src="${product.imageUrl}"
-                 th:alt="${product.name}"
-                 class="card-img-top object-fit-cover">
-
-            <div th:unless="${product.imageUrl != null
-                             and !product.imageUrl.isEmpty()}"
-                 class="d-flex align-items-center justify-content-center">
-
-                <span class="text-muted">
-                    Không có hình ảnh
-                </span>
-
-            </div>
-
+        <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
+             th:src="${product.imageUrl}"
+             th:alt="${product.name}"
+             class="card-img-top">
+        <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}"
+             class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted bg-light">
+            <i class="bi bi-image fs-1 mb-1 text-secondary"></i>
+            <span class="small">Chưa có ảnh</span>
         </div>
-
     </a>
 
-    <!-- Product information -->
-    <div class="card-body d-flex flex-column">
-
-        <!-- Category -->
-        <small class="text-muted mb-1"
-               th:text="${product.category.name}">
-            Category
-        </small>
-
-        <!-- Name -->
-        <h5 class="card-title">
-
-            <a th:href="@{/products/{id}(id=${product.id})}"
-               th:text="${product.name}"
-               class="text-dark text-decoration-none">
-
-                Product name
-
-            </a>
-
-        </h5>
-
-        <!-- Price -->
-        <p class="card-text text-danger fw-bold fs-5 mb-2"
-           th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
-
-            0 ₫
-
-        </p>
-
-        <!-- Stock -->
-        <small class="text-muted mb-3"
-               th:if="${product.stock > 0}"
-               th:text="'Còn ' + ${product.stock} + ' sản phẩm'">
-
-            Còn sản phẩm
-
-        </small>
-
-        <small class="text-danger mb-3"
-               th:if="${product.stock == 0}">
-
-            Hết hàng
-
-        </small>
-
-        <!-- Detail button -->
-        <div class="mt-auto">
-
-            <a th:href="@{/products/{id}(id=${product.id})}"
-               class="btn btn-outline-primary w-100">
-
-                Xem chi tiết
-
-            </a>
-
+    <!-- Card Body -->
+    <div class="card-body d-flex flex-column p-3">
+        <!-- Brand & Category -->
+        <div class="mb-1 d-flex gap-1 flex-wrap">
+            <span class="badge bg-primary text-white small" th:if="${product.brand != null and !product.brand.isEmpty()}" th:text="${product.brand}">Hãng</span>
+            <span class="badge bg-light text-secondary border small"
+                  th:text="${product.category?.name != null ? product.category.name : 'Điện thoại'}">
+                Danh mục
+            </span>
         </div>
 
-    </div>
+        <!-- Name -->
+        <h6 class="card-title fw-bold mb-2">
+            <a th:href="@{/products/{id}(id=${product.id})}"
+               th:text="${product.name}"
+               class="text-dark text-decoration-none text-truncate d-block"
+               th:title="${product.name}">
+                Tên sản phẩm
+            </a>
+        </h6>
 
+        <!-- Price -->
+        <div class="mt-auto pt-2">
+            <div class="d-flex justify-content-between align-items-baseline mb-2">
+                <div>
+                    <small class="text-muted d-block" style="font-size: 0.75rem;" th:if="${product.variants != null and !product.variants.isEmpty()}">Giá từ</small>
+                    <span class="text-danger fw-bold fs-5"
+                          th:text="${product.price != null ? #numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫' : '0 ₫'}">
+                        0 ₫
+                    </span>
+                </div>
+                <span class="badge bg-success-subtle text-success small" th:if="${product.stock > 0}">Sẵn máy</span>
+                <span class="badge bg-danger-subtle text-danger small" th:if="${product.stock == 0}">Hết máy</span>
+            </div>
+
+            <a th:href="@{/products/{id}(id=${product.id})}"
+               class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-1">
+                <i class="bi bi-phone"></i>
+                <span>Xem Cấu Hình & Mua</span>
+            </a>
+        </div>
+    </div>
 </div>
 
 </body>

@@ -57,13 +57,23 @@ public class ProfileController {
     @PostMapping("/change-password")
     public String changePassword(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam String currentPassword,
             @RequestParam String newPassword,
             RedirectAttributes redirectAttributes) {
 
-        userService.updatePassword(
+        boolean ok = userService.changePassword(
                 userDetails.getUserId(),
+                currentPassword,
                 newPassword
         );
+
+        if (!ok) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Mật khẩu hiện tại không chính xác hoặc mật khẩu mới không hợp lệ."
+            );
+            return "redirect:/profile";
+        }
 
         redirectAttributes.addFlashAttribute(
                 "success",

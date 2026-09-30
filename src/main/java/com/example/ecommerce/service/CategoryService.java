@@ -13,9 +13,10 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final com.example.ecommerce.repository.ProductRepository productRepository;
 
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        return categoryRepository.findAllByOrderByIdAsc();
     }
 
     public Category findById(Long id) {
@@ -96,10 +97,25 @@ public class CategoryService {
             return false;
         }
 
-        /*
-         * Product đang tham chiếu Category.
-         * Không cascade delete Product khi xóa Category.
-         */
+        // Xử lý các sản phẩm đang thuộc danh mục này để gỡ bỏ ràng buộc khóa ngoại
+        List<com.example.ecommerce.entity.Product> products = productRepository.findByCategoryId(categoryId);
+        if (products != null && !products.isEmpty()) {
+            Category fallback = categoryRepository.findAllByOrderByIdAsc().stream()
+                    .filter(c -> !c.getId().equals(categoryId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (fallback == null) {
+                fallback = categoryRepository.save(Category.builder().name("Khác").build());
+            }
+
+            for (com.example.ecommerce.entity.Product p : products) {
+                p.setCategory(fallback);
+                p.setStatus(false); // Ẩn kinh doanh các sản phẩm thuộc danh mục bị xóa
+                productRepository.save(p);
+            }
+        }
+
         try {
             categoryRepository.delete(category);
             categoryRepository.flush();

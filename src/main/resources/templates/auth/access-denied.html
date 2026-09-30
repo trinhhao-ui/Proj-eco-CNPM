@@ -2,14 +2,31 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/header :: header('Truy cập bị từ chối - 403')}"></head>
 <body class="bg-light">
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
 <div class="container my-5 text-center">
-    <div class="py-5">
-        <h1 class="display-1 text-danger fw-bold">403</h1>
-        <h3 class="mb-3">Từ chối quyền truy cập!</h3>
-        <p class="text-muted mb-4">Bạn không có quyền hạn truy cập vào tài nguyên hoặc khu vực quản trị này.</p>
-        <a th:href="@{/}" class="btn btn-primary">Quay về Trang chủ</a>
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+                <div class="feature-icon-wrapper bg-danger-subtle text-danger mx-auto mb-3" style="width: 80px; height: 80px; border-radius: 50%;">
+                    <i class="bi bi-shield-slash fs-1"></i>
+                </div>
+                <h1 class="display-3 fw-bold text-danger mb-0">403</h1>
+                <h4 class="fw-bold mt-2 mb-2">Từ Chối Quyền Truy Cập</h4>
+                <p class="text-muted mb-4">
+                    Bạn không có quyền hạn để truy cập vào khu vực quản trị hoặc tài nguyên bảo mật này. Nếu bạn là quản trị viên, vui lòng đăng nhập bằng tài khoản có quyền <code>MANAGER</code>.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a th:href="@{/}" class="btn btn-primary px-4 fw-bold">
+                        <i class="bi bi-house me-1"></i>Về Trang Chủ
+                    </a>
+                    <a th:href="@{/auth/login}" class="btn btn-outline-secondary px-4">
+                        Đăng Nhập Khác
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

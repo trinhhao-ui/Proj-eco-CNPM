@@ -1,30 +1,43 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: header('Đăng ký - Bước 1')}"></head>
+<head th:replace="~{fragments/header :: header('Đăng ký tài khoản - Bước 1')}"></head>
 <body class="bg-light">
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div th:replace="~{fragments/messages :: messages}"></div>
 
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <h3 class="card-title text-center fw-bold mb-3">Đăng ký tài khoản</h3>
-                    <p class="text-muted text-center small mb-4">Bước 1: Nhập email để hệ thống gửi mã xác thực OTP.</p>
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="feature-icon-wrapper bg-success-subtle text-success mx-auto mb-3" style="width: 60px; height: 60px; border-radius: 50%;">
+                            <i class="bi bi-person-plus fs-2"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1">Tạo Tài Khoản Mới</h3>
+                        <p class="text-muted small">Bước 1/2: Nhập địa chỉ email để nhận mã xác thực OTP</p>
+                    </div>
 
                     <form th:action="@{/auth/send-register-otp}" method="post">
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email của bạn:</label>
-                            <input type="email" id="email" name="email" class="form-control" required placeholder="nhapemail@example.com">
+                        <div class="mb-4">
+                            <label for="email" class="form-label small fw-bold">Địa chỉ Email của bạn <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" id="email" name="email" class="form-control" required placeholder="nhapemail@example.com">
+                            </div>
+                            <div class="form-text small">Hệ thống sẽ gửi mã số xác thực gồm 6 số tới hộp thư này.</div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Nhận mã OTP qua Email</button>
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                            <span>Nhận Mã OTP Qua Email</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
                     </form>
 
-                    <div class="text-center mt-4 border-top pt-3">
-                        <span class="text-muted">Đã có tài khoản?</span>
-                        <a th:href="@{/auth/login}" class="fw-bold text-decoration-none">Đăng nhập</a>
+                    <div class="text-center mt-4 border-top pt-4">
+                        <span class="text-muted small">Bạn đã có sẵn tài khoản?</span>
+                        <a th:href="@{/auth/login}" class="fw-bold text-primary small ms-1 text-decoration-none">Đăng nhập ngay &raquo;</a>
                     </div>
                 </div>
             </div>

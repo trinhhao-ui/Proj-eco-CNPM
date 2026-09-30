@@ -1,38 +1,89 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Mã giảm giá - Manager</title></head>
-<body>
-<h1 th:text="${discount != null} ? 'Sửa mã giảm giá' : 'Thêm mã giảm giá'">Form mã giảm giá</h1>
-<a href="/manager/discounts">← Quay lại</a>
-<hr>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/manager-layout :: manager-head(${discount != null ? 'Sửa Mã Giảm Giá' : 'Tạo Mã Giảm Giá'})}"></head>
+<body class="manager-wrapper">
 
-<form th:action="${discount != null} ? @{/manager/discounts/{id}/edit(id=${discount.id})} : @{/manager/discounts/create}"
-      method="post">
-  <div>
-    <label>Mã code:</label><br>
-    <input type="text" name="code" required th:value="${discount?.code}" style="text-transform:uppercase">
-  </div>
-  <div>
-    <label>Giảm giá (%):</label><br>
-    <input type="number" name="discountValue" min="1" max="100" required th:value="${discount?.discountValue}">
-  </div>
-  <div>
-    <label>Số lượng:</label><br>
-    <input type="number" name="quantity" min="1" required th:value="${discount?.quantity}">
-  </div>
-  <div>
-    <label>Ngày bắt đầu:</label><br>
-    <input type="datetime-local" name="startAt" required
-           th:value="${discount?.startAt != null} ? ${#temporals.format(discount.startAt, 'yyyy-MM-dd''T''HH:mm')} : ''">
-  </div>
-  <div>
-    <label>Ngày kết thúc:</label><br>
-    <input type="datetime-local" name="endAt" required
-           th:value="${discount?.endAt != null} ? ${#temporals.format(discount.endAt, 'yyyy-MM-dd''T''HH:mm')} : ''">
-  </div>
-  <br>
-  <button type="submit" th:text="${discount != null} ? 'Cập nhật' : 'Tạo mã'">Lưu</button>
-</form>
+<div th:replace="~{fragments/manager-layout :: manager-navbar}"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/manager-layout :: manager-sidebar('discounts')}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 manager-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1" th:text="${discount != null ? '✏️ Sửa Mã Giảm Giá #' + discount.id : '✨ Tạo Mã Giảm Giá Mới'}">Form mã giảm giá</h2>
+                    <p class="text-muted small mb-0">Thiết lập mã coupon, tỷ lệ chiết khấu (%) và thời gian áp dụng khuyến mãi.</p>
+                </div>
+                <div>
+                    <a th:href="@{/manager/discounts}" class="btn btn-outline-secondary d-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Flash alerts -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="card border-0 shadow-sm" style="max-width: 700px;">
+                <div class="card-body p-4">
+                    <form th:action="${discount != null} ? @{/manager/discounts/{id}/edit(id=${discount.id})} : @{/manager/discounts/create}"
+                          method="post">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Mã Code (Coupon) <span class="text-danger">*</span></label>
+                            <input type="text" name="code" class="form-control text-uppercase font-monospace fw-bold" required th:value="${discount?.code}" placeholder="VD: TET2026, SALE50">
+                            <div class="form-text">Khách hàng sẽ nhập chính xác chuỗi ký tự này khi thanh toán.</div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tỷ lệ giảm giá (%) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="number" name="discountValue" min="1" max="100" class="form-control" required th:value="${discount?.discountValue}" placeholder="10">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Số lượng lượt dùng <span class="text-danger">*</span></label>
+                                <input type="number" name="quantity" min="1" class="form-control" required th:value="${discount != null ? discount.quantity : 50}" placeholder="50">
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Thời điểm bắt đầu <span class="text-danger">*</span></label>
+                                <input type="datetime-local" name="startAt" class="form-control" required
+                                       th:value="${discount?.startAt != null ? #temporals.format(discount.startAt, 'yyyy-MM-dd''T''HH:mm') : ''}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Thời điểm kết thúc <span class="text-danger">*</span></label>
+                                <input type="datetime-local" name="endAt" class="form-control" required
+                                       th:value="${discount?.endAt != null ? #temporals.format(discount.endAt, 'yyyy-MM-dd''T''HH:mm') : ''}">
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4 fw-bold d-flex align-items-center gap-2">
+                                <i class="bi bi-floppy"></i>
+                                <span th:text="${discount != null ? 'Lưu Thay Đổi' : 'Tạo Mã Giảm Giá'}">Lưu</span>
+                            </button>
+                            <a th:href="@{/manager/discounts}" class="btn btn-outline-secondary px-3">Hủy bỏ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/manager-layout :: manager-scripts}"></div>
 </body>
 </html>

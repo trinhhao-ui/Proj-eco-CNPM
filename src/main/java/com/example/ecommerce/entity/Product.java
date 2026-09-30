@@ -5,6 +5,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -30,6 +32,9 @@ public class Product {
     @Column(nullable = false, length = 200)
     private String name;
 
+    @Column(length = 100)
+    private String brand;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -48,6 +53,22 @@ public class Product {
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @Builder.Default
+    private List<ProductVariant> variants = new ArrayList<>();
+
+    @OneToOne(
+            mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private ProductSpecification specification;
 
     @PrePersist
     protected void onCreate() {

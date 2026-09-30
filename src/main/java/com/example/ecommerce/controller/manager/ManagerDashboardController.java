@@ -60,6 +60,11 @@ public class ManagerDashboardController {
                 )
         );
 
+        model.addAttribute(
+                "lowStockProducts",
+                productService.getLowStockProducts(3)
+        );
+
         return "manager/dashboard";
     }
 }

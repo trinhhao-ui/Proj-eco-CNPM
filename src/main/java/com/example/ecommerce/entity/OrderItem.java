@@ -34,6 +34,16 @@ public class OrderItem {
     )
     private Product product;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "product_variant_id",
+            foreignKey = @ForeignKey(name = "fk_order_items_variant")
+    )
+    private ProductVariant productVariant;
+
+    @Column(length = 150)
+    private String variantName;
+
     @Column(nullable = false)
     private Integer quantity;
 
@@ -43,4 +53,24 @@ public class OrderItem {
      */
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal price;
+
+    /**
+     * Mã IMEI của chiếc máy đã giao cho khách.
+     */
+    @Column(length = 50)
+    private String imei;
+
+    public String getDisplayName() {
+        if (variantName != null && !variantName.isBlank()) {
+            return (product != null ? product.getName() : "") + " (" + variantName + ")";
+        }
+        return product != null ? product.getName() : "";
+    }
+
+    public BigDecimal getSubtotal() {
+        if (price == null || quantity == null) {
+            return BigDecimal.ZERO;
+        }
+        return price.multiply(BigDecimal.valueOf(quantity));
+    }
 }

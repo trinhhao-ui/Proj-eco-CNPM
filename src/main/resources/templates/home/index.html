@@ -1,74 +1,229 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: header('Trang chủ - E-Commerce')}"></head>
+<head th:replace="~{fragments/header :: header('Trang chủ - Cửa Hàng Trực Tuyến')}"></head>
 <body>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div th:replace="~{fragments/messages :: messages}"></div>
 
 <div class="container my-4">
-    <!-- Hero Banner -->
-    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm border">
-        <div class="container-fluid py-3">
-            <h1 class="display-6 fw-bold text-primary">Website Mua Sắm Trực Tuyến</h1>
-            <p class="col-md-8 fs-5 text-muted">Hệ thống thương mại điện tử Spring Boot MVC & Thymeleaf. Đáp ứng đầy đủ quy trình từ giỏ hàng, đặt hàng, thanh toán COD/VNPay đến đánh giá sản phẩm.</p>
-            <a th:href="@{/products}" class="btn btn-primary btn-lg">Khám phá sản phẩm ngay</a>
-        </div>
-    </div>
-
-    <!-- Danh mục -->
-    <div class="mb-5">
-        <h3 class="border-bottom pb-2 mb-3">📁 Danh mục sản phẩm</h3>
-        <div class="row row-cols-2 row-cols-md-4 g-3">
-            <div class="col" th:each="category : ${categories}">
-                <div class="card h-100 text-center p-3 shadow-sm">
-                    <h5 class="card-title" th:text="${category.name}">Tên danh mục</h5>
-                    <a th:href="@{/categories/{id}(id=${category.id})}" class="btn btn-sm btn-outline-primary mt-2">Xem sản phẩm</a>
+    <!-- Hero Banner Điện Thoại -->
+    <div class="p-4 p-md-5 mb-4 rounded-4 shadow-sm text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #2563eb 100%);">
+        <div class="row align-items-center">
+            <div class="col-lg-7 py-3">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 shadow-sm">
+                    <i class="bi bi-shield-check me-1"></i> Điện thoại chính hãng • Bảo hành điện tử IMEI
+                </span>
+                <h1 class="display-5 fw-bold mb-3">Thế Giới Điện Thoại Thông Minh Chính Hãng</h1>
+                <p class="lead opacity-90 mb-4">
+                    Sở hữu ngay các siêu phẩm iPhone, Samsung Galaxy, Xiaomi đỉnh cao với giá tốt nhất. Cam kết máy mới nguyên seal, chính sách 1 đổi 1 trong 30 ngày và tra cứu bảo hành tức thì qua IMEI.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a th:href="@{/products}" class="btn btn-warning btn-lg fw-bold text-dark px-4 shadow">
+                        <i class="bi bi-phone me-2"></i>Xem tất cả điện thoại
+                    </a>
+                    <a th:href="@{/warranty}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-search me-2"></i>Tra cứu bảo hành IMEI
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center mt-4 mt-lg-0 d-none d-lg-block">
+                <div class="p-4 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 backdrop-blur shadow">
+                    <i class="bi bi-phone-vibrate text-warning" style="font-size: 6.5rem;"></i>
+                    <h4 class="text-white fw-bold mt-2">Cửa Hàng Điện Thoại Số 1</h4>
+                    <p class="small text-white-50 mb-0">Hàng chính hãng 100% • Kích hoạt IMEI chuẩn hãng</p>
                 </div>
             </div>
         </div>
-        <p th:if="${#lists.isEmpty(categories)}" class="text-muted">Chưa có danh mục nào.</p>
     </div>
+
+    <!-- Thanh chọn nhanh thương hiệu -->
+    <div class="card border-0 shadow-sm p-3 mb-4 bg-white rounded-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="fw-bold text-secondary small"><i class="bi bi-fire text-danger me-1"></i>HÃNG ĐIỆN THOẠI HÀNG ĐẦU:</span>
+            <div class="d-flex flex-wrap gap-2">
+                <a th:href="@{/products(brand='Apple')}" class="btn btn-sm btn-outline-dark rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-apple me-1"></i>Apple (iPhone)
+                </a>
+                <a th:href="@{/products(brand='Samsung')}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                    Samsung Galaxy
+                </a>
+                <a th:href="@{/products(brand='Xiaomi')}" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 fw-semibold">
+                    Xiaomi
+                </a>
+                <a th:href="@{/products(brand='OPPO')}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold">
+                    OPPO
+                </a>
+                <a th:href="@{/products}" class="btn btn-sm btn-secondary rounded-pill px-3 fw-semibold">
+                    Tất cả hãng &raquo;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 Cam kết chính hãng (Features Bar) -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-3 col-sm-6">
+            <div class="feature-box h-100">
+                <div class="feature-icon-wrapper bg-primary-subtle text-primary">
+                    <i class="bi bi-patch-check-fill"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">Chính Hãng 100%</h6>
+                    <small class="text-muted">Máy mới nguyên seal, chuẩn nguồn gốc</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="feature-box h-100">
+                <div class="feature-icon-wrapper bg-success-subtle text-success">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">1 Đổi 1 Trong 30 Ngày</h6>
+                    <small class="text-muted">Đổi mới nếu phát sinh lỗi nhà sản xuất</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="feature-box h-100">
+                <div class="feature-icon-wrapper bg-warning-subtle text-warning">
+                    <i class="bi bi-shield-shaded"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">Bảo Hành Điện Tử</h6>
+                    <small class="text-muted">Quản lý và tra cứu tiện lợi theo số IMEI</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="feature-box h-100">
+                <div class="feature-icon-wrapper bg-info-subtle text-info">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">Giao Nhanh Tận Nhà</h6>
+                    <small class="text-muted">Kiểm tra máy rồi mới thanh toán COD</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh mục sản phẩm -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1"><i class="bi bi-collection me-2 text-primary"></i>Danh Mục Ngành Hàng</h3>
+                <p class="text-muted small mb-0">Tìm kiếm các mặt hàng theo nhóm phù hợp</p>
+            </div>
+            <a th:href="@{/categories}" class="btn btn-outline-primary btn-sm fw-semibold">
+                Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-4 g-3" th:if="${not #lists.isEmpty(categories)}">
+            <div class="col" th:each="category : ${categories}">
+                <a th:href="@{/categories/{id}(id=${category.id})}" class="text-decoration-none">
+                    <div class="card h-100 text-center p-3 border-0 shadow-sm card-hover bg-white">
+                        <div class="feature-icon-wrapper bg-light text-primary mx-auto mb-2" style="width: 56px; height: 56px; border-radius: 50%;">
+                            <i class="bi bi-box-seam fs-3"></i>
+                        </div>
+                        <h6 class="card-title fw-bold text-dark mb-1" th:text="${category.name}">Tên danh mục</h6>
+                        <span class="text-primary small fw-semibold">Xem sản phẩm &raquo;</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div th:if="${#lists.isEmpty(categories)}" class="alert alert-light text-center py-4 border">
+            Chưa có danh mục nào.
+        </div>
+    </section>
 
     <!-- Sản phẩm mới nhất -->
-    <div class="mb-5">
-        <h3 class="border-bottom pb-2 mb-3">✨ Sản phẩm mới nhất</h3>
-        <div class="row row-cols-1 row-cols-md-4 g-4">
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1"><i class="bi bi-stars me-2 text-warning"></i>Sản Phẩm Mới Nhất</h3>
+                <p class="text-muted small mb-0">Cập nhật những mặt hàng mới vừa cập bến</p>
+            </div>
+            <a th:href="@{/products}" class="btn btn-outline-primary btn-sm fw-semibold">
+                Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" th:if="${not #lists.isEmpty(newProducts)}">
             <div class="col" th:each="product : ${newProducts}">
-                <div class="card h-100 shadow-sm">
-                    <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product image">
-                    <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}" class="bg-secondary text-white text-center py-5">Chưa có ảnh</div>
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title text-truncate" th:text="${product.name}">Tên sản phẩm</h5>
-                        <p class="card-text text-danger fw-bold fs-5 mb-1" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</p>
-                        <p class="card-text text-muted small mb-3" th:text="'Kho: ' + ${product.stock}"></p>
-                        <div class="mt-auto">
-                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-sm btn-primary w-100">Chi tiết & Đặt mua</a>
+                <div th:replace="~{fragments/product-card :: product-card(${product})}"></div>
+            </div>
+        </div>
+        <div th:if="${#lists.isEmpty(newProducts)}" class="alert alert-light text-center py-4 border">
+            Chưa có sản phẩm mới nào.
+        </div>
+    </section>
+
+    <!-- Sản phẩm giá tốt -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1"><i class="bi bi-fire me-2 text-danger"></i>Sản Phẩm Giá Cực Tốt</h3>
+                <p class="text-muted small mb-0">Tiết kiệm tối đa với danh mục sản phẩm giá tốt nhất</p>
+            </div>
+            <a th:href="@{/products}" class="btn btn-outline-danger btn-sm fw-semibold">
+                Xem thêm khuyến mãi <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" th:if="${not #lists.isEmpty(cheapProducts)}">
+            <div class="col" th:each="product : ${cheapProducts}">
+                <div th:replace="~{fragments/product-card :: product-card(${product})}"></div>
+            </div>
+        </div>
+        <div th:if="${#lists.isEmpty(cheapProducts)}" class="alert alert-light text-center py-4 border">
+            Chưa có sản phẩm giá tốt nào.
+        </div>
+    </section>
+
+    <!-- Widget Tra Cứu Bảo Hành Điện Tử IMEI Nhanh -->
+    <div class="card border-0 shadow-sm rounded-4 mb-5 p-4 p-md-5" style="background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <span class="badge bg-success px-3 py-2 rounded-pill fw-bold mb-2">
+                    <i class="bi bi-shield-check me-1"></i> Trung Tâm Bảo Hành Điện Tử
+                </span>
+                <h3 class="fw-bold text-dark mb-2">Tra Cứu Thời Hạn Bảo Hành Máy Của Bạn</h3>
+                <p class="text-secondary mb-0">
+                    Mỗi chiếc điện thoại xuất kho đều được kích hoạt bảo hành điện tử chính hãng 12 tháng theo số <strong>IMEI</strong> (15 số) hoặc <strong>Số điện thoại</strong> đặt hàng.
+                </p>
+            </div>
+            <div class="col-lg-6">
+                <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm">
+                    <form th:action="@{/warranty}" method="get" class="d-flex flex-column flex-sm-row gap-2">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-upc-scan text-primary"></i></span>
+                            <input type="text" name="keyword" class="form-control border-start-0" placeholder="Nhập IMEI (15 số) hoặc SĐT mua hàng..." required>
                         </div>
-                    </div>
+                        <button type="submit" class="btn btn-primary fw-bold text-nowrap px-4 py-2">
+                            <i class="bi bi-search me-1"></i>Tra Cứu
+                        </button>
+                    </form>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-info-circle me-1"></i>Ví dụ IMEI: <code>358921104829102</code> hoặc số điện thoại người nhận.
+                    </small>
                 </div>
             </div>
         </div>
-        <p th:if="${#lists.isEmpty(newProducts)}" class="text-muted">Chưa có sản phẩm mới nào.</p>
     </div>
 
-    <!-- Sản phẩm giá tốt -->
-    <div class="mb-5">
-        <h3 class="border-bottom pb-2 mb-3">🔥 Sản phẩm giá tốt</h3>
-        <div class="row row-cols-1 row-cols-md-4 g-4">
-            <div class="col" th:each="product : ${cheapProducts}">
-                <div class="card h-100 shadow-sm border-warning">
-                    <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product image">
-                    <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}" class="bg-secondary text-white text-center py-5">Chưa có ảnh</div>
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title text-truncate" th:text="${product.name}">Tên sản phẩm</h5>
-                        <p class="card-text text-danger fw-bold fs-5 mb-1" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</p>
-                        <p class="card-text text-muted small mb-3" th:text="'Kho: ' + ${product.stock}"></p>
-                        <div class="mt-auto">
-                            <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-sm btn-outline-warning text-dark w-100">Chi tiết</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Call to action Banner -->
+    <div class="rounded-4 p-5 text-center text-white my-5 shadow-sm" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+        <h2 class="fw-bold mb-3">Tư Vấn Chọn Điện Thoại Phù Hợp</h2>
+        <p class="text-muted lead mb-4" style="max-width: 600px; margin: 0 auto;">
+            Hệ thống cung cấp đầy đủ thông số kỹ thuật (Chipset, Màn hình 120Hz, Dung lượng Pin, Bộ nhớ trong) giúp bạn dễ dàng so sánh và đưa ra quyết định chuẩn xác.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a th:href="@{/products}" class="btn btn-primary btn-lg px-4 fw-bold">
+                <i class="bi bi-phone me-2"></i>Khám phá toàn bộ điện thoại
+            </a>
         </div>
     </div>
 </div>

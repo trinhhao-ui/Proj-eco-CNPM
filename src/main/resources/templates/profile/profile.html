@@ -1,73 +1,168 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: header('Hồ sơ tài khoản')}"></head>
+<head th:replace="~{fragments/header :: header('Hồ sơ tài khoản - E-Commerce')}"></head>
 <body>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div th:replace="~{fragments/messages :: messages}"></div>
 
 <div class="container my-4" th:if="${user != null}">
-    <h3 class="border-bottom pb-2 mb-4">👤 Thông tin tài khoản</h3>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a th:href="@{/}"><i class="bi bi-house me-1"></i>Trang chủ</a></li>
+            <li class="breadcrumb-item active">Hồ sơ cá nhân</li>
+        </ol>
+    </nav>
 
-    <div class="row">
-        <!-- Cập nhật thông tin cá nhân & Địa chỉ -->
-        <div class="col-md-7 mb-4">
-            <div class="card shadow-sm border">
-                <div class="card-header bg-white fw-bold py-3">Thông tin cá nhân & Địa chỉ nhận hàng</div>
+    <!-- Header người dùng -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex flex-column flex-sm-row align-items-center gap-4">
+            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center shadow-sm" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                <i class="bi bi-person"></i>
+            </div>
+            <div class="text-center text-sm-start">
+                <div class="d-flex align-items-center justify-content-center justify-content-sm-start gap-2 mb-1">
+                    <h3 class="fw-bold mb-0" th:text="${user.name}">Nguyễn Văn A</h3>
+                    <span class="badge" th:classappend="${user.role.name() == 'MANAGER' ? 'bg-warning text-dark' : 'bg-primary'}" th:text="${user.role.name() == 'MANAGER' ? 'Quản trị viên' : 'Khách hàng'}">Khách hàng</span>
+                </div>
+                <p class="text-muted mb-0 small">
+                    <i class="bi bi-envelope me-1"></i><span th:text="${user.email}">user@mail.com</span>
+                    <span class="mx-2">•</span>
+                    <i class="bi bi-calendar3 me-1"></i>Thành viên từ: <span th:text="${#temporals.format(user.createdAt, 'dd/MM/yyyy')}">01/01/2026</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Cột trái: Thông tin cá nhân & Địa chỉ mặc định -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-person-lines-fill me-2"></i>Thông tin nhận hàng mặc định
+                    </h5>
+                </div>
                 <div class="card-body p-4">
                     <form th:action="@{/profile/update}" method="post">
                         <div class="mb-3">
-                            <label class="form-label text-muted">Email (không thể đổi):</label>
-                            <input type="email" class="form-control bg-light" th:value="${user.email}" readonly>
+                            <label class="form-label fw-bold small text-muted">Email đăng nhập (không thể thay đổi):</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope-at"></i></span>
+                                <input type="email" class="form-control bg-light" th:value="${user.email}" readonly>
+                            </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="name" class="form-label fw-bold">Họ và tên:</label>
-                            <input type="text" id="name" name="name" class="form-control" th:value="${user.name}" required>
+                            <label for="name" class="form-label fw-bold small">Họ và tên hiển thị <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                <input type="text" id="name" name="name" class="form-control" th:value="${user.name}" required placeholder="Họ và tên của bạn">
+                            </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="phone" class="form-label fw-bold">Số điện thoại:</label>
-                            <input type="tel" id="phone" name="phone" class="form-control" th:value="${user.phone}">
+                            <label for="phone" class="form-label fw-bold small">Số điện thoại liên hệ</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                                <input type="tel" id="phone" name="phone" class="form-control" th:value="${user.phone}" placeholder="Ví dụ: 0901234567">
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="address" class="form-label fw-bold">Địa chỉ giao hàng mặc định:</label>
-                            <textarea id="address" name="address" class="form-control" rows="3" th:text="${user.address}" placeholder="Nhập địa chỉ nhận hàng của bạn"></textarea>
-                            <div class="form-text">Địa chỉ này sẽ tự động điền sẵn khi bạn thanh toán đơn hàng.</div>
+                        <div class="mb-4">
+                            <label for="address" class="form-label fw-bold small">Địa chỉ giao hàng mặc định</label>
+                            <textarea id="address" name="address" class="form-control" rows="3"
+                                      th:text="${user.address}" placeholder="Nhập địa chỉ nhà để tự động điền khi thanh toán"></textarea>
+                            <div class="form-text small">Địa chỉ này sẽ giúp bạn thanh toán nhanh hơn chỉ trong 1 thao tác.</div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary px-4">Lưu thay đổi</button>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-floppy"></i>
+                            <span>Lưu Thông Tin</span>
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Đổi mật khẩu -->
-        <div class="col-md-5">
-            <div class="card shadow-sm border mb-4">
-                <div class="card-header bg-white fw-bold py-3">Đổi mật khẩu</div>
+        <!-- Cột phải: Đổi mật khẩu & Tiện ích -->
+        <div class="col-lg-5">
+            <!-- Đổi mật khẩu -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-shield-lock me-2"></i>Đổi mật khẩu tài khoản
+                    </h5>
+                </div>
                 <div class="card-body p-4">
                     <form th:action="@{/profile/change-password}" method="post">
                         <div class="mb-3">
-                            <label for="newPassword" class="form-label fw-bold">Mật khẩu mới:</label>
-                            <input type="password" id="newPassword" name="newPassword" class="form-control" required placeholder="Nhập mật khẩu mới">
+                            <label for="currentPassword" class="form-label fw-bold small">Mật khẩu hiện tại <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-shield-lock"></i></span>
+                                <input type="password" id="currentPassword" name="currentPassword" class="form-control" required placeholder="Nhập mật khẩu hiện tại">
+                                <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="currentPassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-warning px-4">Cập nhật mật khẩu</button>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label fw-bold small">Mật khẩu mới <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
+                                <input type="password" id="newPassword" name="newPassword" class="form-control" minlength="6" required placeholder="Nhập mật khẩu mới">
+                                <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="newPassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text small">Tối thiểu 6 ký tự để bảo vệ tài khoản của bạn.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning text-dark px-4 fw-bold d-flex align-items-center gap-2">
+                            <i class="bi bi-lock"></i>
+                            <span>Cập Nhật Mật Khẩu</span>
+                        </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Thao tác nhanh -->
-            <div class="list-group shadow-sm border">
-                <a th:href="@{/orders}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
-                    <span>📦 Xem đơn mua của tôi</span>
-                    <span>&raquo;</span>
-                </a>
-                <a th:href="@{/notifications}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
-                    <span>🔔 Thông báo của tôi</span>
-                    <span>&raquo;</span>
-                </a>
+            <!-- Phím tắt nhanh -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="fw-bold mb-0 text-muted">LỐI TẮT NHANH</h6>
+                </div>
+                <div class="list-group list-group-flush p-2 pt-0">
+                    <a th:href="@{/orders}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-0 rounded-3 mb-1">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-bag-check fs-5 text-primary"></i>
+                            <span class="fw-semibold">Đơn mua của tôi</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                    <a th:href="@{/notifications}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-0 rounded-3 mb-1">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-bell fs-5 text-warning"></i>
+                            <span class="fw-semibold">Thông báo của tôi</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                    <a th:href="@{/warranty}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-0 rounded-3 mb-1">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-check fs-5 text-success"></i>
+                            <span class="fw-semibold">Tra cứu bảo hành (IMEI)</span>
+                        </div>
+                        <i class="bi bi-chevron-right text-muted small"></i>
+                    </a>
+                    <a th:if="${user.role.name() == 'MANAGER'}" th:href="@{/manager/dashboard}" class="list-group-item list-group-item-action d-flex align-items-center justify-content-between p-3 border-0 rounded-3 bg-warning-subtle text-dark">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-speedometer2 fs-5 text-dark"></i>
+                            <span class="fw-bold">Vào Bảng Quản Trị Hệ Thống</span>
+                        </div>
+                        <i class="bi bi-arrow-right-circle text-dark"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

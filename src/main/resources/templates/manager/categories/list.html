@@ -1,44 +1,109 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Danh mục - Manager</title></head>
-<body>
-<h1>Quản lý Danh mục</h1>
-<a href="/manager/dashboard">Dashboard</a>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/manager-layout :: manager-head('Quản Lý Danh Mục')}"></head>
+<body class="manager-wrapper">
 
-<h2>Thêm danh mục mới</h2>
-<form action="/manager/categories/create" method="post">
-  <input type="text" name="name" placeholder="Tên danh mục" required>
-  <button type="submit">Thêm</button>
-</form>
+<div th:replace="~{fragments/manager-layout :: manager-navbar}"></div>
 
-<h2>Danh sách</h2>
-<table border="1" cellpadding="8">
-  <thead>
-    <tr><th>ID</th><th>Tên</th><th>Hành động</th></tr>
-  </thead>
-  <tbody>
-    <tr th:each="c : ${categories}">
-      <td th:text="${c.id}"></td>
-      <td>
-        <form th:action="@{/manager/categories/{id}/edit(id=${c.id})}" method="post" style="display:inline">
-          <input type="text" name="name" th:value="${c.name}" required>
-          <button type="submit">Lưu</button>
-        </form>
-      </td>
-      <td>
-        <form th:action="@{/manager/categories/{id}/delete(id=${c.id})}" method="post" style="display:inline"
-              onsubmit="return confirm('Xóa danh mục này?')">
-          <button type="submit">Xóa</button>
-        </form>
-      </td>
-    </tr>
-    <tr th:if="${#lists.isEmpty(categories)}">
-      <td colspan="3">Chưa có danh mục.</td>
-    </tr>
-  </tbody>
-</table>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/manager-layout :: manager-sidebar('categories')}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 manager-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">📁 Quản Lý Thương Hiệu & Danh Mục</h2>
+                    <p class="text-muted small mb-0">Phân loại điện thoại theo hãng (Apple, Samsung, Xiaomi...) hoặc phân khúc giá giúp khách hàng dễ dàng tìm kiếm.</p>
+                </div>
+            </div>
+
+            <!-- Flash alerts -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="row g-4">
+                <!-- Thêm danh mục mới -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 border-0">
+                            <h5 class="fw-bold mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Thêm danh mục mới</h5>
+                        </div>
+                        <div class="card-body">
+                            <form th:action="@{/manager/categories/create}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Tên thương hiệu / danh mục <span class="text-danger">*</span></label>
+                                    <input type="text" name="name" class="form-control" placeholder="Ví dụ: iPhone (iOS), Samsung Galaxy, Xiaomi..." required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-plus-lg"></i>
+                                    <span>Lưu danh mục</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách danh mục -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0"><i class="bi bi-list-ul me-2 text-primary"></i>Danh sách hiện có (<span th:text="${#lists.size(categories)}">0</span>)</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 70px;">ID</th>
+                                            <th>Tên danh mục (Chỉnh sửa trực tiếp)</th>
+                                            <th class="text-center" style="width: 120px;">Xóa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="c : ${categories}">
+                                            <td class="text-muted fw-bold" th:text="'#' + ${c.id}">#1</td>
+                                            <td>
+                                                <form th:action="@{/manager/categories/{id}/edit(id=${c.id})}" method="post" class="d-flex gap-2">
+                                                    <input type="text" name="name" class="form-control form-control-sm" th:value="${c.name}" required>
+                                                    <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1" title="Lưu thay đổi">
+                                                        <i class="bi bi-check-lg"></i>
+                                                        <span class="d-none d-sm-inline">Lưu</span>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                            <td class="text-center">
+                                                <form th:action="@{/manager/categories/{id}/delete(id=${c.id})}" method="post" class="d-inline"
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này? Các sản phẩm thuộc danh mục có thể bị ảnh hưởng.')">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Xóa">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        <tr th:if="${#lists.isEmpty(categories)}">
+                                            <td colspan="3" class="text-center py-4 text-muted">Chưa có danh mục nào được tạo.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/manager-layout :: manager-scripts}"></div>
 </body>
 </html>

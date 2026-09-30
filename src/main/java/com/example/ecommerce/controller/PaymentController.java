@@ -18,7 +18,8 @@ public class PaymentController {
 
     @GetMapping("/vnpay-return")
     public String vnpayReturn(
-            HttpServletRequest request) {
+            HttpServletRequest request,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
 
         VnPayResult result =
                 vnPayService.verifyReturn(request);
@@ -27,10 +28,32 @@ public class PaymentController {
 
             paymentService.handleVnPayResult(result);
 
+            if (result.isSuccess()) {
+                redirectAttributes.addFlashAttribute(
+                        "success",
+                        "Thanh toán trực tuyến VNPAY thành công cho đơn hàng #" + result.getOrderId()
+                );
+            } else {
+                redirectAttributes.addFlashAttribute(
+                        "error",
+                        "Giao dịch VNPAY không thành công hoặc bạn đã hủy thanh toán (Mã: " + result.getResponseCode() + ")."
+                );
+            }
+
             return "redirect:/orders/"
                     + result.getOrderId();
         }
 
-        return "redirect:/orders/payment-result?status=invalid";
+        return "redirect:/payment/result?status=invalid";
+    }
+
+    @GetMapping("/result")
+    public String paymentResult(
+            @RequestParam(required = false) String status,
+            org.springframework.ui.Model model) {
+
+        model.addAttribute("status", status);
+
+        return "order/payment-result";
     }
 }

@@ -24,12 +24,18 @@ public class UserService {
     }
 
     public Page<User> searchUsers(String keyword, Pageable pageable) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return userRepository.findAll(pageable);
-        }
+        return filterUsers(keyword, null, null, null, pageable);
+    }
 
-        return userRepository.findByNameContainingIgnoreCase(
-                keyword.trim(),
+    public Page<User> filterUsers(
+            String keyword,
+            String email,
+            java.time.LocalDate fromDate,
+            java.time.LocalDate toDate,
+            Pageable pageable
+    ) {
+        return userRepository.findAll(
+                com.example.ecommerce.specification.UserSpecifications.withFilter(keyword, email, fromDate, toDate),
                 pageable
         );
     }
@@ -135,6 +141,32 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
 
+        userRepository.save(user);
+
+        return true;
+    }
+
+    @Transactional
+    public boolean changePassword(
+            Long userId,
+            String currentPassword,
+            String newPassword
+    ) {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            return false;
+        }
+
+        if (currentPassword == null || newPassword == null || newPassword.trim().isEmpty()) {
+            return false;
+        }
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            return false;
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword.trim()));
         userRepository.save(user);
 
         return true;

@@ -1,11 +1,83 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
-<footer th:fragment="footer" class="bg-light text-center text-muted py-4 mt-5 border-top">
+
+<footer th:fragment="footer" class="main-footer mt-5">
     <div class="container">
-        <p class="mb-0">© 2026 E-Commerce nhóm 6.</p>
+        <div class="row g-4">
+            <!-- Cột 1: Thông tin thương hiệu -->
+            <div class="col-lg-4 col-md-6">
+                <h5 class="text-white fw-bold d-flex align-items-center gap-2 mb-3">
+                    <i class="bi bi-phone text-warning fs-4"></i>
+                    <span>Cửa Hàng Điện Thoại</span>
+                </h5>
+                <p class="small text-muted mb-4">
+                    Hệ thống bán lẻ điện thoại thông minh chính hãng hàng đầu. Cam kết máy mới nguyên seal, kích hoạt bảo hành điện tử theo IMEI và hỗ trợ 1 đổi 1 trong 30 ngày.
+                </p>
+                <div class="d-flex gap-3 text-secondary">
+                    <a href="#" class="text-light fs-5"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-light fs-5"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-light fs-5"><i class="bi bi-youtube"></i></a>
+                    <a href="#" class="text-light fs-5"><i class="bi bi-tiktok"></i></a>
+                </div>
+            </div>
+
+            <!-- Cột 2: Khám phá sản phẩm -->
+            <div class="col-lg-2 col-md-6 col-6">
+                <h6>Mua Sắm</h6>
+                <ul>
+                    <li><a th:href="@{/}">Trang chủ</a></li>
+                    <li><a th:href="@{/products}">Kho điện thoại</a></li>
+                    <li><a th:href="@{/categories}">Thương hiệu & Danh mục</a></li>
+                    <li><a th:href="@{/warranty}">Tra cứu bảo hành</a></li>
+                    <li><a th:href="@{/cart}">Giỏ hàng của tôi</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 3: Hỗ trợ khách hàng -->
+            <div class="col-lg-3 col-md-6 col-6">
+                <h6>Hỗ Trợ Khách Hàng</h6>
+                <ul>
+                    <li><a th:href="@{/warranty}">Tra cứu bảo hành IMEI</a></li>
+                    <li><a href="#">Chính sách 1 đổi 1 trong 30 ngày</a></li>
+                    <li><a href="#">Chính sách bảo mật thông tin</a></li>
+                    <li><a href="#">Hotline: 1900 8888 (24/7)</a></li>
+                </ul>
+            </div>
+
+            <!-- Cột 4: Phương thức thanh toán -->
+            <div class="col-lg-3 col-md-6">
+                <h6>Phương Thức Thanh Toán</h6>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge bg-secondary p-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-cash-stack"></i> Tiền mặt (COD)
+                    </span>
+                    <span class="badge bg-primary p-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-credit-card-2-front"></i> Cổng VNPAY
+                    </span>
+                </div>
+                <h6 class="mt-4">Chính Sách Vận Chuyển</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-dark-subtle text-light p-2">Giao Hàng Siêu Tốc</span>
+                    <span class="badge bg-dark-subtle text-light p-2">Freeship Toàn Quốc</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom d-flex flex-column flex-sm-row justify-content-between align-items-center text-muted small">
+            <p class="mb-2 mb-sm-0">© 2026 Cửa Hàng Điện Thoại Chính Hãng. Đồ Án Chuyên Ngành Phần Mềm.</p>
+            <p class="mb-0">Mô hình quản lý: Khách hàng (USER) • Quản trị viên (MANAGER)</p>
+        </div>
     </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SockJS & STOMP for Real-time Notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <!-- Custom Main JS -->
+    <script th:src="@{/js/main.js}"></script>
 </footer>
+
 </body>
 </html>

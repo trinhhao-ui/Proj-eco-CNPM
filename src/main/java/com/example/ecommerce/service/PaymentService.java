@@ -126,6 +126,12 @@ public class PaymentService {
                     LocalDateTime.now()
             );
 
+            Order order = orderRepository.findById(orderId).orElse(null);
+            if (order != null && order.getStatus() == com.example.ecommerce.enums.OrderStatus.PENDING) {
+                order.setStatus(com.example.ecommerce.enums.OrderStatus.CONFIRMED);
+                orderRepository.save(order);
+            }
+
         } else {
 
             payment.setStatus(

@@ -1,25 +1,53 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: header('Danh mục sản phẩm')}"></head>
+<head th:replace="~{fragments/header :: header('Tất cả danh mục - E-Commerce')}"></head>
 <body>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div th:replace="~{fragments/messages :: messages}"></div>
 
 <div class="container my-4">
-    <h3 class="border-bottom pb-2 mb-4">📁 Tất cả danh mục sản phẩm</h3>
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        <div class="col" th:each="cat : ${categories}">
-            <div class="card h-100 shadow-sm border-0 bg-light p-3 text-center">
-                <div class="card-body">
-                    <h4 class="card-title fw-bold" th:text="${cat.name}">Category</h4>
-                    <p class="text-muted small">Khám phá các sản phẩm thuộc nhóm này</p>
-                    <a th:href="@{/categories/{id}(id=${cat.id})}" class="btn btn-outline-primary">Xem các mặt hàng &raquo;</a>
-                </div>
-            </div>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a th:href="@{/}"><i class="bi bi-house me-1"></i>Trang chủ</a></li>
+            <li class="breadcrumb-item active">Thương hiệu & Phân khúc</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h3 class="fw-bold mb-1"><i class="bi bi-phone text-primary me-2"></i>Thương Hiệu & Dòng Máy Điện Thoại</h3>
+            <p class="text-muted small mb-0">Lựa chọn hãng sản xuất hoặc phân khúc bên dưới để khám phá danh sách điện thoại chi tiết.</p>
         </div>
     </div>
-    <div th:if="${#lists.isEmpty(categories)}" class="alert alert-info text-center mt-3">
-        Chưa có danh mục nào.
+
+    <!-- Lưới danh mục -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" th:if="${not #lists.isEmpty(categories)}">
+        <div class="col" th:each="cat : ${categories}">
+            <a th:href="@{/categories/{id}(id=${cat.id})}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm card-hover p-4 text-center bg-white">
+                    <div class="feature-icon-wrapper bg-primary-subtle text-primary mx-auto mb-3" style="width: 64px; height: 64px; border-radius: 50%;">
+                        <i class="bi bi-phone fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2" th:text="${cat.name}">Category</h5>
+                    <p class="text-muted small mb-3">Xem các dòng điện thoại thuộc nhóm này</p>
+                    <span class="btn btn-outline-primary btn-sm rounded-pill fw-semibold mt-auto">
+                        Khám phá máy <i class="bi bi-arrow-right ms-1"></i>
+                    </span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Empty state -->
+    <div th:if="${#lists.isEmpty(categories)}" class="card border-0 shadow-sm text-center py-5">
+        <div class="card-body">
+            <i class="bi bi-phone-vibrate text-muted" style="font-size: 3.5rem;"></i>
+            <h5 class="fw-bold mt-3 mb-1">Chưa có thương hiệu nào!</h5>
+            <p class="text-muted small">Quản trị viên chưa thiết lập hãng sản xuất nào trên hệ thống.</p>
+            <a th:href="@{/products}" class="btn btn-primary btn-sm">Xem tất cả điện thoại</a>
+        </div>
     </div>
 </div>
 

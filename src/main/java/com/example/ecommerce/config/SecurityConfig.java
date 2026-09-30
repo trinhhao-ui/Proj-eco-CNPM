@@ -74,10 +74,12 @@ public class SecurityConfig {
                                 "/auth/**"
                         ).permitAll()
 
-                        // Public product & category browsing
+                        // Public product & category browsing, warranty & phone comparison
                         .requestMatchers(
                                 "/products/**",
-                                "/categories/**"
+                                "/categories/**",
+                                "/warranty/**",
+                                "/compare/**"
                         ).permitAll()
 
                         // Payment callbacks & WebSocket

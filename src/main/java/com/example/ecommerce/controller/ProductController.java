@@ -11,6 +11,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.ecommerce.dto.PhoneFilterCriteria;
+import com.example.ecommerce.entity.Product;
+import com.example.ecommerce.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 @Controller
 @RequestMapping("/products")
 @RequiredArgsConstructor
@@ -22,13 +27,26 @@ public class ProductController {
 
     @GetMapping
     public String listProducts(
-            @PageableDefault(size = 20) Pageable pageable,
+            @ModelAttribute PhoneFilterCriteria criteria,
+            @PageableDefault(size = 12) Pageable pageable,
             Model model) {
 
-        Page<?> products = productService.getActiveProducts(pageable);
+        Page<Product> products = productService.filterProducts(criteria, pageable);
 
         model.addAttribute("products", products);
+        model.addAttribute("criteria", criteria);
+        model.addAttribute("keyword", criteria.getKeyword());
+        model.addAttribute("selectedBrand", criteria.getBrand());
+        model.addAttribute("selectedRam", criteria.getRam());
+        model.addAttribute("selectedStorage", criteria.getStorage());
+        model.addAttribute("selectedPriceRange", criteria.getPriceRange());
+        model.addAttribute("selectedSort", criteria.getSort());
+        model.addAttribute("hasFilter", criteria.hasActiveFilter());
+
         model.addAttribute("categories", categoryService.getAllCategories());
+        model.addAttribute("availableBrands", productService.getAvailableBrands());
+        model.addAttribute("availableRams", productService.getAvailableRams());
+        model.addAttribute("availableStorages", productService.getAvailableStorages());
 
         return "product/list";
     }
@@ -36,14 +54,32 @@ public class ProductController {
     @GetMapping("/{id}")
     public String productDetail(
             @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PageableDefault(size = 20) Pageable pageable,
             Model model) {
 
-        model.addAttribute("product", productService.findById(id));
+        var product = productService.findById(id);
+        model.addAttribute("product", product);
+        if (product != null) {
+            model.addAttribute("variants", product.getVariants());
+            model.addAttribute("spec", product.getSpecification());
+        }
         model.addAttribute(
                 "reviews",
                 reviewService.getProductReviews(id, pageable)
         );
+
+        if (userDetails != null) {
+            Long eligibleOrderId = reviewService.findEligibleOrderIdForReview(userDetails.getUserId(), id);
+            boolean hasReviewed = reviewService.hasUserReviewedProduct(userDetails.getUserId(), id);
+            model.addAttribute("canReview", eligibleOrderId != null);
+            model.addAttribute("eligibleOrderId", eligibleOrderId);
+            model.addAttribute("hasReviewed", hasReviewed);
+        } else {
+            model.addAttribute("canReview", false);
+            model.addAttribute("eligibleOrderId", null);
+            model.addAttribute("hasReviewed", false);
+        }
 
         return "product/detail";
     }
@@ -51,15 +87,13 @@ public class ProductController {
     @GetMapping("/search")
     public String searchProducts(
             @RequestParam(required = false, defaultValue = "") String keyword,
-            @PageableDefault(size = 20) Pageable pageable,
+            @ModelAttribute PhoneFilterCriteria criteria,
+            @PageableDefault(size = 12) Pageable pageable,
             Model model) {
 
-        Page<?> products = productService.searchProducts(keyword, pageable);
-
-        model.addAttribute("products", products);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("categories", categoryService.getAllCategories());
-
-        return "product/list";
+        if (keyword != null && !keyword.isBlank()) {
+            criteria.setKeyword(keyword.trim());
+        }
+        return listProducts(criteria, pageable, model);
     }
 }

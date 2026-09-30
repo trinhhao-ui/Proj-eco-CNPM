@@ -1,44 +1,68 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: header('Đăng nhập')}"></head>
+<head th:replace="~{fragments/header :: header('Đăng nhập - E-Commerce')}"></head>
 <body class="bg-light">
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div th:replace="~{fragments/messages :: messages}"></div>
 
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <h3 class="card-title text-center fw-bold mb-4">Đăng nhập tài khoản</h3>
-
-                    <div th:if="${param.error}" class="alert alert-danger">
-                        Email hoặc mật khẩu không chính xác!
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="feature-icon-wrapper bg-primary-subtle text-primary mx-auto mb-3" style="width: 60px; height: 60px; border-radius: 50%;">
+                            <i class="bi bi-box-arrow-in-right fs-2"></i>
+                        </div>
+                        <h3 class="fw-bold mb-1">Đăng Nhập Tài Khoản</h3>
+                        <p class="text-muted small">Chào mừng bạn trở lại với hệ thống mua sắm trực tuyến</p>
                     </div>
-                    <div th:if="${param.logout}" class="alert alert-info">
-                        Bạn đã đăng xuất thành công.
+
+                    <!-- Lỗi hoặc Thông báo đăng xuất -->
+                    <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show small" role="alert">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        <span>Email hoặc mật khẩu không chính xác!</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div th:if="${param.logout}" class="alert alert-info alert-dismissible fade show small" role="alert">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <span>Bạn đã đăng xuất tài khoản thành công.</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
 
                     <form th:action="@{/auth/login}" method="post">
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email:</label>
-                            <input type="email" id="email" name="email" class="form-control" required placeholder="nhapemail@example.com">
+                            <label for="email" class="form-label small fw-bold">Địa chỉ Email:</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input type="email" id="email" name="email" class="form-control" required placeholder="nhapemail@example.com">
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between">
-                                <label for="password" class="form-label">Mật khẩu:</label>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="password" class="form-label small fw-bold mb-0">Mật khẩu:</label>
                                 <a th:href="@{/auth/forgot-password}" class="small text-decoration-none">Quên mật khẩu?</a>
                             </div>
-                            <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••">
+                                <button class="btn btn-outline-secondary toggle-password-btn" type="button" data-target="password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Đăng nhập</button>
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                            <span>Đăng Nhập</span>
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
                     </form>
 
-                    <div class="text-center mt-4 border-top pt-3">
-                        <span class="text-muted">Chưa có tài khoản?</span>
-                        <a th:href="@{/auth/register}" class="fw-bold text-decoration-none">Đăng ký ngay</a>
+                    <div class="text-center mt-4 border-top pt-4">
+                        <span class="text-muted small">Chưa có tài khoản mua sắm?</span>
+                        <a th:href="@{/auth/register}" class="fw-bold text-primary small ms-1 text-decoration-none">Đăng ký ngay &raquo;</a>
                     </div>
                 </div>
             </div>

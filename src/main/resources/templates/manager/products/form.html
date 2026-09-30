@@ -1,48 +1,421 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Sản phẩm - Manager</title></head>
-<body>
-<h1 th:text="${product != null} ? 'Sửa sản phẩm' : 'Thêm sản phẩm'">Form sản phẩm</h1>
-<a href="/manager/products">← Quay lại</a>
-<hr>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/manager-layout :: manager-head(${product != null ? 'Sửa Điện Thoại' : 'Thêm Điện Thoại Mới'})}"></head>
+<body class="manager-wrapper">
 
-<form th:action="${product != null} ? @{/manager/products/{id}/edit(id=${product.id})} : @{/manager/products/create}"
-      method="post" enctype="multipart/form-data">
+<div th:replace="~{fragments/manager-layout :: manager-navbar}"></div>
 
-  <div>
-    <label>Danh mục:</label><br>
-    <select name="categoryId" required>
-      <option value="">-- Chọn danh mục --</option>
-      <option th:each="c : ${categories}"
-              th:value="${c.id}"
-              th:text="${c.name}"
-              th:selected="${product != null and product.category?.id == c.id}"></option>
-    </select>
-  </div>
-  <div>
-    <label>Tên sản phẩm:</label><br>
-    <input type="text" name="name" required th:value="${product?.name}">
-  </div>
-  <div>
-    <label>Mô tả:</label><br>
-    <textarea name="description" rows="4" cols="50" th:text="${product?.description}"></textarea>
-  </div>
-  <div>
-    <label>Giá:</label><br>
-    <input type="number" name="price" step="0.01" min="0" required th:value="${product?.price}">
-  </div>
-  <div>
-    <label>Tồn kho:</label><br>
-    <input type="number" name="stock" min="0" required th:value="${product?.stock}">
-  </div>
-  <div>
-    <label>Ảnh sản phẩm (để trống nếu không thay đổi):</label><br>
-    <img th:if="${product?.imageUrl}" th:src="${product.imageUrl}" width="100"><br>
-    <input type="file" name="image" accept="image/*">
-  </div>
-  <br>
-  <button type="submit" th:text="${product != null} ? 'Cập nhật' : 'Thêm mới'">Lưu</button>
-</form>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/manager-layout :: manager-sidebar('products')}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 manager-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1" th:text="${product != null ? '📱 Chỉnh Sửa Điện Thoại #' + product.id : '✨ Thêm Điện Thoại Mới'}">Form sản phẩm</h2>
+                    <p class="text-muted small mb-0">Quản lý thông tin máy, phiên bản màu sắc/dung lượng và thông số kỹ thuật.</p>
+                </div>
+                <div>
+                    <a th:href="@{/manager/products}" class="btn btn-outline-secondary d-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Flash alerts -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Form Thông tin chung và Cấu hình thông số -->
+            <form th:action="${product != null} ? @{/manager/products/{id}/edit(id=${product.id})} : @{/manager/products/create}"
+                  method="post" enctype="multipart/form-data">
+
+                <div class="row g-4 mb-4">
+                    <!-- Cột trái: Thông tin chung & Cấu hình -->
+                    <div class="col-lg-8">
+                        <!-- Thẻ 1: Thông tin cơ bản máy -->
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white py-3 border-0">
+                                <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-phone me-2"></i>1. Thông Tin Cơ Bản Dòng Máy</h5>
+                            </div>
+                            <div class="card-body p-4 pt-0">
+                                <div class="row mb-3">
+                                    <div class="col-md-7">
+                                        <label class="form-label fw-bold">Tên điện thoại <span class="text-danger">*</span></label>
+                                        <input type="text" name="name" class="form-control" required th:value="${product?.name}" placeholder="Ví dụ: iPhone 16 Pro Max">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label fw-bold">Hãng sản xuất <span class="text-danger">*</span></label>
+                                        <input type="text" name="brand" class="form-control" list="brandList" th:value="${product?.brand}" placeholder="Chọn hoặc nhập hãng..." required>
+                                        <datalist id="brandList">
+                                            <option value="Apple">
+                                            <option value="Samsung">
+                                            <option value="Xiaomi">
+                                            <option value="OPPO">
+                                            <option value="vivo">
+                                            <option value="Google Pixel">
+                                            <option value="ASUS ROG">
+                                            <option value="Realme">
+                                        </datalist>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Phân khúc / Danh mục <span class="text-danger">*</span></label>
+                                        <select name="categoryId" class="form-select" required>
+                                            <option value="">-- Chọn danh mục --</option>
+                                            <option th:each="c : ${categories}"
+                                                    th:value="${c.id}"
+                                                    th:text="${c.name}"
+                                                    th:selected="${product != null and product.category?.id == c.id}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Giá niêm yết khởi điểm (VNĐ) <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="number" name="price" step="0.01" min="0" class="form-control" required th:value="${product?.price}" placeholder="29990000">
+                                            <span class="input-group-text">₫</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-0">
+                                    <label class="form-label fw-bold">Mô tả đặc điểm nổi bật</label>
+                                    <textarea name="description" class="form-control" rows="3" th:text="${product?.description}" placeholder="Mô tả thiết kế, camera, màn hình, hiệu năng của máy..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thẻ 2: Thông số kỹ thuật (Phone Specs) -->
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-cpu me-2 text-primary"></i>2. Thông Số Cấu Hình Kỹ Thuật</h5>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Hỗ trợ bộ lọc</span>
+                            </div>
+                            <div class="card-body p-4 pt-0">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Kích thước màn hình:</label>
+                                        <input type="text" name="screenSize" list="screenSizeList" class="form-control" placeholder="VD: 6.9 inch" th:value="${spec?.screenSize}">
+                                        <datalist id="screenSizeList">
+                                            <option value="6.1 inch">
+                                            <option value="6.36 inch">
+                                            <option value="6.7 inch">
+                                            <option value="6.8 inch">
+                                            <option value="6.9 inch">
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Công nghệ màn hình:</label>
+                                        <input type="text" name="screenTech" list="screenTechList" class="form-control" placeholder="VD: OLED 120Hz" th:value="${spec?.screenTech}">
+                                        <datalist id="screenTechList">
+                                            <option value="OLED 120Hz">
+                                            <option value="Super AMOLED 120Hz">
+                                            <option value="Dynamic AMOLED 2X">
+                                            <option value="IPS LCD 90Hz">
+                                            <option value="AMOLED 144Hz">
+                                        </datalist>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Vi xử lý (Chipset):</label>
+                                        <input type="text" name="chipset" list="chipsetList" class="form-control" placeholder="VD: Apple A18 Pro" th:value="${spec?.chipset}">
+                                        <datalist id="chipsetList">
+                                            <option value="Apple A18 Pro">
+                                            <option value="Apple A17 Pro">
+                                            <option value="Snapdragon 8 Gen 3">
+                                            <option value="Snapdragon 8s Gen 3">
+                                            <option value="Dimensity 9300">
+                                            <option value="Snapdragon 7s Gen 2">
+                                            <option value="Google Tensor G4">
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Dung lượng RAM:</label>
+                                        <input type="text" name="ram" list="ramList" class="form-control" placeholder="VD: 8GB" th:value="${spec?.ram}">
+                                        <datalist id="ramList">
+                                            <option value="4GB">
+                                            <option value="6GB">
+                                            <option value="8GB">
+                                            <option value="12GB">
+                                            <option value="16GB">
+                                            <option value="24GB">
+                                        </datalist>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Dung lượng Pin:</label>
+                                        <input type="text" name="battery" list="batteryList" class="form-control" placeholder="VD: 5000 mAh" th:value="${spec?.battery}">
+                                        <datalist id="batteryList">
+                                            <option value="4000 mAh">
+                                            <option value="4500 mAh">
+                                            <option value="5000 mAh">
+                                            <option value="5500 mAh">
+                                            <option value="6000 mAh">
+                                        </datalist>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Công nghệ sạc:</label>
+                                        <input type="text" name="chargingWatt" list="chargingList" class="form-control" placeholder="VD: Sạc nhanh 45W" th:value="${spec?.chargingWatt}">
+                                        <datalist id="chargingList">
+                                            <option value="Sạc nhanh 25W">
+                                            <option value="Sạc nhanh 33W">
+                                            <option value="Sạc nhanh 45W">
+                                            <option value="Sạc siêu nhanh 67W">
+                                            <option value="Sạc siêu nhanh 120W">
+                                        </datalist>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Camera sau:</label>
+                                        <input type="text" name="rearCamera" class="form-control" placeholder="VD: 48MP + 48MP + 12MP" th:value="${spec?.rearCamera}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold">Camera trước:</label>
+                                        <input type="text" name="frontCamera" class="form-control" placeholder="VD: 12MP" th:value="${spec?.frontCamera}">
+                                    </div>
+                                </div>
+
+                                <div class="mb-0">
+                                    <label class="form-label small fw-bold">Hệ điều hành:</label>
+                                    <input type="text" name="os" list="osList" class="form-control" placeholder="VD: iOS 18, Android 15" th:value="${spec?.os}">
+                                    <datalist id="osList">
+                                        <option value="iOS 18">
+                                        <option value="Android 15">
+                                        <option value="One UI 6.1 (Android 14)">
+                                        <option value="Xiaomi HyperOS">
+                                        <option value="ColorOS 14">
+                                    </datalist>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột phải: Ảnh, Tồn kho & Lưu -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm p-4 bg-white sticky-top" style="top: 80px;">
+                            <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-image me-2 text-primary"></i>Hình Ảnh & Kho</h5>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small">Tổng tồn kho dự phòng <span class="text-danger">*</span></label>
+                                <input type="number" name="stock" min="0" class="form-control" required th:value="${product != null ? product.stock : 10}" placeholder="10">
+                                <div class="form-text small">Số lượng tổng hoặc số lượng máy khi không dùng phiên bản màu.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small">Ảnh đại diện điện thoại</label>
+                                <div th:if="${product?.imageUrl}" class="mb-2 text-center p-2 bg-light rounded border">
+                                    <img th:src="${product.imageUrl}" class="rounded" style="max-height: 160px; max-width: 100%; object-fit: contain;">
+                                    <div class="small text-muted mt-1">Ảnh hiện tại</div>
+                                </div>
+                                <input type="file" name="image" class="form-control" accept="image/*">
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary py-3 fw-bold fs-6 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-floppy"></i>
+                                    <span th:text="${product != null ? 'Lưu Toàn Bộ Cập Nhật' : 'Tạo Dòng Điện Thoại Mới'}">Lưu</span>
+                                </button>
+                                <a th:href="@{/manager/products}" class="btn btn-outline-secondary py-2">
+                                    Hủy bỏ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Quản lý Phiên bản (Variants: Màu sắc & Dung lượng) - Chế độ Edit -->
+            <div th:if="${product != null}" class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-sliders me-2 text-primary"></i>Quản Lý Biến Thể (Màu Sắc & Dung Lượng Bộ Nhớ)</h5>
+                        <small class="text-muted">Mỗi biến thể có giá bán và số lượng tồn kho riêng biệt.</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-primary fw-bold d-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#addVariantModal">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Thêm biến thể mới</span>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 70px;">Ảnh</th>
+                                    <th>Dung lượng (ROM)</th>
+                                    <th>Màu sắc</th>
+                                    <th>Mã SKU</th>
+                                    <th class="text-end">Giá bán riêng</th>
+                                    <th class="text-center">Tồn kho</th>
+                                    <th class="text-center" style="width: 120px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${variants == null or variants.isEmpty()}">
+                                    <td colspan="7" class="text-center py-4 text-muted">
+                                        Chưa có phiên bản con nào. Bấm "Thêm biến thể mới" để tạo (ví dụ: 256GB - Titan Tự Nhiên, 512GB - Đen...).
+                                    </td>
+                                </tr>
+                                <tr th:each="v : ${variants}">
+                                    <td>
+                                        <img th:if="${v.imageUrl != null and !v.imageUrl.isEmpty()}" th:src="${v.imageUrl}" class="rounded border" style="width: 45px; height: 45px; object-fit: contain;">
+                                        <div th:unless="${v.imageUrl != null and !v.imageUrl.isEmpty()}" class="bg-light rounded border text-muted small d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                            <i class="bi bi-phone"></i>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary text-white fs-6" th:text="${v.storage}">128GB</span>
+                                    </td>
+                                    <td>
+                                        <strong class="text-dark" th:text="${v.color}">Đen</strong>
+                                    </td>
+                                    <td class="font-monospace text-muted small" th:text="${v.sku != null ? v.sku : '-'}">SKU-001</td>
+                                    <td class="text-end text-danger fw-bold fs-6" th:text="${v.price != null ? #numbers.formatDecimal(v.price, 0, 'COMMA', 0, 'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+                                    <td class="text-center fw-bold" th:text="${v.stock} + ' máy'">0 máy</td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <!-- Nút mở modal sửa biến thể -->
+                                            <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1"
+                                                    data-bs-toggle="modal"
+                                                    th:data-bs-target="'#editVariantModal-' + ${v.id}"
+                                                    title="Chỉnh sửa biến thể">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <!-- Nút xóa biến thể -->
+                                            <form th:action="@{/manager/products/{id}/variants/{variantId}/delete(id=${product.id}, variantId=${v.id})}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1"
+                                                        onclick="return confirm('Bạn có chắc chắn muốn xóa phiên bản này?')"
+                                                        title="Xóa biến thể">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <!-- Modal Sửa Biến Thể -->
+                                        <div class="modal fade text-start" th:id="'editVariantModal-' + ${v.id}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form th:action="@{/manager/products/{id}/variants/{variantId}/update(id=${product.id}, variantId=${v.id})}" method="post">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Cập Nhật Phiên Bản Điện Thoại</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="row g-3 mb-3">
+                                                                <div class="col-6">
+                                                                    <label class="form-label small fw-bold">Bộ nhớ (Dung lượng) <span class="text-danger">*</span></label>
+                                                                    <input type="text" name="storage" class="form-control" th:value="${v.storage}" required>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label class="form-label small fw-bold">Màu sắc <span class="text-danger">*</span></label>
+                                                                    <input type="text" name="color" class="form-control" th:value="${v.color}" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row g-3 mb-3">
+                                                                <div class="col-6">
+                                                                    <label class="form-label small fw-bold">Giá bán bản này (₫) <span class="text-danger">*</span></label>
+                                                                    <input type="number" name="price" step="0.01" min="0" class="form-control" th:value="${v.price}" required>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label class="form-label small fw-bold">Tồn kho <span class="text-danger">*</span></label>
+                                                                    <input type="number" name="stock" min="0" class="form-control" th:value="${v.stock}" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label small fw-bold">Mã SKU:</label>
+                                                                <input type="text" name="sku" class="form-control font-monospace" th:value="${v.sku}">
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                                            <button type="submit" class="btn btn-primary fw-bold">Cập Nhật</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Thêm Phiên Bản Mới -->
+            <div th:if="${product != null}" class="modal fade" id="addVariantModal" tabindex="-1" aria-labelledby="addVariantModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form th:action="@{/manager/products/{id}/variants/add(id=${product.id})}" method="post" enctype="multipart/form-data">
+                            <div class="modal-header">
+                                <h5 class="modal-title fw-bold" id="addVariantModalLabel"><i class="bi bi-plus-circle text-primary me-2"></i>Thêm Phiên Bản Điện Thoại Mới</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold">Bộ nhớ (Dung lượng) <span class="text-danger">*</span></label>
+                                        <input type="text" name="storage" class="form-control" placeholder="VD: 256GB, 512GB, 1TB" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold">Màu sắc <span class="text-danger">*</span></label>
+                                        <input type="text" name="color" class="form-control" placeholder="VD: Titan Sa Mạc, Đen" required>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold">Giá bán bản này (₫) <span class="text-danger">*</span></label>
+                                        <input type="number" name="price" step="0.01" min="0" class="form-control" placeholder="32990000" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold">Số lượng tồn kho <span class="text-danger">*</span></label>
+                                        <input type="number" name="stock" min="0" value="5" class="form-control" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Mã SKU (tùy chọn):</label>
+                                    <input type="text" name="sku" class="form-control font-monospace" placeholder="VD: IP16PM-256-DESERT">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Ảnh riêng theo màu này (tùy chọn):</label>
+                                    <input type="file" name="image" class="form-control" accept="image/*">
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary fw-bold">Tạo Phiên Bản</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/manager-layout :: manager-scripts}"></div>
 </body>
 </html>

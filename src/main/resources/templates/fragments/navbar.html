@@ -2,9 +2,16 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm">
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm"
+     th:with="isLoggedIn=${session?.SPRING_SECURITY_CONTEXT != null and session.SPRING_SECURITY_CONTEXT.authentication != null and session.SPRING_SECURITY_CONTEXT.authentication.name != 'anonymousUser'},
+              isManager=${isLoggedIn and #strings.contains(#strings.toString(session.SPRING_SECURITY_CONTEXT.authentication.authorities), 'ROLE_MANAGER')},
+              currentUserId=${isLoggedIn and session.SPRING_SECURITY_CONTEXT.authentication.principal instanceof T(com.example.ecommerce.security.CustomUserDetails) ? session.SPRING_SECURITY_CONTEXT.authentication.principal.userId : null}"
+     th:attr="data-user-id=${currentUserId}">
     <div class="container">
-        <a class="navbar-brand fw-bold" th:href="@{/}">🛒 E-Commerce</a>
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" th:href="@{/}">
+            <i class="bi bi-shop fs-4 text-warning"></i>
+            <span>E-Commerce</span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -12,44 +19,92 @@
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/}">Trang chủ</a>
+                    <a class="nav-link" th:href="@{/}"><i class="bi bi-house me-1"></i>Trang chủ</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/products}">Sản phẩm</a>
+                    <a class="nav-link" th:href="@{/products}"><i class="bi bi-phone me-1"></i>Sản phẩm</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/cart}">Giỏ hàng</a>
+                    <a class="nav-link" th:href="@{/compare}"><i class="bi bi-arrow-left-right me-1"></i>So sánh</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/orders}">Đơn mua</a>
+                    <a class="nav-link" th:href="@{/warranty}"><i class="bi bi-shield-check me-1"></i>Tra cứu bảo hành</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/notifications}">Thông báo</a>
+                    <a class="nav-link" th:href="@{/cart}"><i class="bi bi-cart3 me-1"></i>Giỏ hàng</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link text-warning" th:href="@{/manager/dashboard}">Quản trị</a>
+                <li class="nav-item" th:if="${isLoggedIn}">
+                    <a class="nav-link" th:href="@{/orders}"><i class="bi bi-bag-check me-1"></i>Đơn mua</a>
+                </li>
+                <li class="nav-item" th:if="${isLoggedIn}">
+                    <a class="nav-link" th:href="@{/notifications}"><i class="bi bi-bell me-1"></i>Thông báo</a>
                 </li>
             </ul>
 
+            <!-- Form tìm kiếm sản phẩm -->
             <form class="d-flex me-3" th:action="@{/products/search}" method="get">
-                <input class="form-control me-2 form-control-sm" type="search" name="keyword" th:value="${keyword}" placeholder="Tìm sản phẩm...">
-                <button class="btn btn-outline-light btn-sm" type="submit">Tìm</button>
+                <div class="input-group input-group-sm">
+                    <input class="form-control" type="search" name="keyword" th:value="${keyword}" placeholder="Tìm sản phẩm..." aria-label="Search">
+                    <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
+                </div>
             </form>
 
-            <ul class="navbar-nav mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/profile}">Tài khoản</a>
+            <ul class="navbar-nav mb-2 mb-lg-0 align-items-lg-center">
+                <!-- Nút Quản trị nổi bật chỉ dành riêng cho MANAGER -->
+                <li class="nav-item me-lg-2" th:if="${isManager}">
+                    <a class="btn btn-warning btn-sm fw-bold text-dark d-flex align-items-center gap-1 shadow-sm px-3" th:href="@{/manager/dashboard}">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>Quản trị viên</span>
+                    </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/auth/login}">Đăng nhập</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/auth/register}">Đăng ký</a>
-                </li>
-                <li class="nav-item">
-                    <form th:action="@{/auth/logout}" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-link nav-link p-0 d-inline">Đăng xuất</button>
-                    </form>
+
+                <!-- Trạng thái: Chưa đăng nhập (Guest) -->
+                <th:block th:unless="${isLoggedIn}">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/auth/login}"><i class="bi bi-box-arrow-in-right me-1"></i>Đăng nhập</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-light btn-sm ms-lg-2 px-3 text-white" th:href="@{/auth/register}">Đăng ký</a>
+                    </li>
+                </th:block>
+
+                <!-- Trạng thái: Đã đăng nhập (User / Manager) -->
+                <li class="nav-item dropdown ms-lg-2" th:if="${isLoggedIn}">
+                    <a class="nav-link dropdown-toggle text-light d-flex align-items-center gap-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle fs-5"></i>
+                        <span class="small" th:text="${session.SPRING_SECURITY_CONTEXT.authentication.name}">Tài khoản</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2" th:href="@{/profile}">
+                                <i class="bi bi-person-gear"></i>Hồ sơ tài khoản
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2" th:href="@{/orders}">
+                                <i class="bi bi-bag"></i>Lịch sử đơn mua
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center gap-2" th:href="@{/notifications}">
+                                <i class="bi bi-bell"></i>Thông báo
+                            </a>
+                        </li>
+                        <li th:if="${isManager}"><hr class="dropdown-divider"></li>
+                        <li th:if="${isManager}">
+                            <a class="dropdown-item text-warning fw-bold d-flex align-items-center gap-2" th:href="@{/manager/dashboard}">
+                                <i class="bi bi-speedometer2"></i>Trang Quản Trị
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form th:action="@{/auth/logout}" method="post" class="px-2 py-1">
+                                <button type="submit" class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                                    <i class="bi bi-box-arrow-right"></i>Đăng xuất
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </li>
             </ul>
         </div>

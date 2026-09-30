@@ -4,15 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(
-        name = "cart_items",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_cart_items_cart_product",
-                        columnNames = {"cart_id", "product_id"}
-                )
-        }
-)
+@Table(name = "cart_items")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -40,6 +32,24 @@ public class CartItem {
     )
     private Product product;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "product_variant_id",
+            foreignKey = @ForeignKey(name = "fk_cart_items_variant")
+    )
+    private ProductVariant productVariant;
+
     @Column(nullable = false)
     private Integer quantity;
+
+    public java.math.BigDecimal getEffectivePrice() {
+        if (productVariant != null && productVariant.getPrice() != null) {
+            return productVariant.getPrice();
+        }
+        return product != null && product.getPrice() != null ? product.getPrice() : java.math.BigDecimal.ZERO;
+    }
+
+    public java.math.BigDecimal getSubtotal() {
+        return getEffectivePrice().multiply(java.math.BigDecimal.valueOf(quantity != null ? quantity : 0));
+    }
 }

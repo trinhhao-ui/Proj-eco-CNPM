@@ -1,49 +1,116 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Mã giảm giá - Manager</title></head>
-<body>
-<h1>Quản lý Mã giảm giá</h1>
-<a href="/manager/dashboard">Dashboard</a> |
-<a href="/manager/discounts/create">+ Thêm mã</a>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/manager-layout :: manager-head('Quản Lý Mã Giảm Giá')}"></head>
+<body class="manager-wrapper">
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>ID</th><th>Mã</th><th>Giảm (%)</th><th>Số lượng</th><th>Đã dùng</th>
-      <th>Bắt đầu</th><th>Kết thúc</th><th>Hành động</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr th:each="d : ${discounts.content}">
-      <td th:text="${d.id}"></td>
-      <td th:text="${d.code}"></td>
-      <td th:text="${d.discountValue}"></td>
-      <td th:text="${d.quantity}"></td>
-      <td th:text="${d.usedCount}"></td>
-      <td th:text="${#temporals.format(d.startAt, 'dd/MM/yyyy HH:mm')}"></td>
-      <td th:text="${#temporals.format(d.endAt, 'dd/MM/yyyy HH:mm')}"></td>
-      <td>
-        <a th:href="@{/manager/discounts/{id}/edit(id=${d.id})}">Sửa</a>
-        <form th:action="@{/manager/discounts/{id}/delete(id=${d.id})}" method="post" style="display:inline"
-              onsubmit="return confirm('Xóa mã này?')">
-          <button type="submit">Xóa</button>
-        </form>
-      </td>
-    </tr>
-    <tr th:if="${discounts.empty}">
-      <td colspan="8">Chưa có mã giảm giá.</td>
-    </tr>
-  </tbody>
-</table>
+<div th:replace="~{fragments/manager-layout :: manager-navbar}"></div>
 
-<div th:if="${discounts.totalPages > 1}">
-  <span th:each="i : ${#numbers.sequence(0, discounts.totalPages - 1)}">
-    <a th:href="@{/manager/discounts(page=${i})}" th:text="${i + 1}"
-       th:style="${i == discounts.number} ? 'font-weight:bold' : ''"></a>
-  </span>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/manager-layout :: manager-sidebar('discounts')}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 manager-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">🏷️ Quản Lý Mã Giảm Giá</h2>
+                    <p class="text-muted small mb-0">Tạo mã khuyến mãi coupon giảm giá phần trăm áp dụng khi khách thanh toán đơn hàng.</p>
+                </div>
+                <div>
+                    <a th:href="@{/manager/discounts/create}" class="btn btn-primary d-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Tạo Mã Mới</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Flash alerts -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 70px;">ID</th>
+                                    <th>Mã giảm giá</th>
+                                    <th>Mức giảm</th>
+                                    <th>Số lượng còn</th>
+                                    <th>Thời gian bắt đầu</th>
+                                    <th>Thời gian kết thúc</th>
+                                    <th class="text-center" style="width: 150px;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="d : ${discounts.content}">
+                                    <td class="text-muted fw-bold" th:text="'#' + ${d.id}">#1</td>
+                                    <td>
+                                        <span class="badge bg-primary fs-6 font-monospace" th:text="${d.code}">SALE20</span>
+                                    </td>
+                                    <td class="fw-bold text-success" th:text="'- ' + ${d.discountValue} + '%'">- 20%</td>
+                                    <td>
+                                        <span class="badge bg-secondary-subtle text-secondary" th:text="${d.quantity} + ' lượt'">10 lượt</span>
+                                    </td>
+                                    <td class="small text-muted" th:text="${#temporals.format(d.startAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                                    <td class="small text-muted" th:text="${#temporals.format(d.endAt, 'dd/MM/yyyy HH:mm')}">31/12/2026</td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a th:href="@{/manager/discounts/{id}/edit(id=${d.id})}" class="btn btn-outline-primary" title="Sửa mã">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <form th:action="@{/manager/discounts/{id}/delete(id=${d.id})}" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa mã giảm giá này?')">
+                                                <button type="submit" class="btn btn-outline-danger" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${discounts.empty}">
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                                        Chưa có mã giảm giá nào được tạo.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Phân trang -->
+                <div class="card-footer bg-white py-3 border-0" th:if="${discounts.totalPages > 1}">
+                    <nav>
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            <li class="page-item" th:classappend="${discounts.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/manager/discounts(page=${discounts.number - 1})}">&laquo;</a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, discounts.totalPages - 1)}" th:classappend="${i == discounts.number} ? 'active'">
+                                <a class="page-link" th:href="@{/manager/discounts(page=${i})}" th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${discounts.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/manager/discounts(page=${discounts.number + 1})}">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
 </div>
+
+<div th:replace="~{fragments/manager-layout :: manager-scripts}"></div>
 </body>
 </html>

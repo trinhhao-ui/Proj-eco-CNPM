@@ -1,22 +1,52 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: header('Kết quả thanh toán')}"></head>
+<head th:replace="~{fragments/header :: header('Kết quả thanh toán - E-Commerce')}"></head>
 <body>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<div class="container my-5 text-center">
-    <div class="py-5">
-        <div th:if="${status == 'invalid'}" class="alert alert-danger py-4">
-            <h2 class="fw-bold">❌ Giao dịch không hợp lệ hoặc thanh toán thất bại!</h2>
-            <p class="text-muted">Chữ ký thanh toán không hợp lệ hoặc quý khách đã hủy thanh toán tại cổng VNPAY.</p>
-        </div>
-        <div th:unless="${status == 'invalid'}" class="alert alert-info py-4">
-            <h2 class="fw-bold">Thông tin thanh toán</h2>
-            <p class="text-muted" th:text="'Trạng thái phản hồi: ' + ${status}"></p>
-        </div>
-        <div class="mt-4">
-            <a th:href="@{/orders}" class="btn btn-primary px-4">Xem danh sách đơn hàng</a>
-            <a th:href="@{/}" class="btn btn-outline-secondary px-4 ms-2">Về trang chủ</a>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm text-center p-4 p-md-5">
+                <!-- Thanh toán thành công -->
+                <div th:if="${status == 'success' or status == '00'}">
+                    <div class="feature-icon-wrapper bg-success-subtle text-success mx-auto mb-3" style="width: 80px; height: 80px; border-radius: 50%;">
+                        <i class="bi bi-check-circle-fill fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold text-success mb-2">Thanh Toán Thành Công!</h3>
+                    <p class="text-muted mb-4">
+                        Giao dịch trực tuyến của bạn đã được ghi nhận thành công qua cổng thanh toán VNPAY. Đơn hàng đang được chuyển tới người bán để chuẩn bị giao.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a th:href="@{/orders}" class="btn btn-primary py-2 fw-bold">
+                            <i class="bi bi-bag-check me-2"></i>Xem Đơn Mua Của Bạn
+                        </a>
+                        <a th:href="@{/}" class="btn btn-outline-secondary py-2">
+                            Quay về Trang chủ
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Thanh toán thất bại hoặc hủy -->
+                <div th:unless="${status == 'success' or status == '00'}">
+                    <div class="feature-icon-wrapper bg-danger-subtle text-danger mx-auto mb-3" style="width: 80px; height: 80px; border-radius: 50%;">
+                        <i class="bi bi-x-circle-fill fs-1"></i>
+                    </div>
+                    <h3 class="fw-bold text-danger mb-2">Thanh Toán Chưa Hoàn Tất</h3>
+                    <p class="text-muted mb-4">
+                        Giao dịch thanh toán chưa được xác nhận hoặc đã bị hủy. Đơn hàng của bạn vẫn được lưu ở trạng thái chờ xử lý trong lịch sử đơn mua.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a th:href="@{/orders}" class="btn btn-primary py-2 fw-bold">
+                            Kiểm Tra Đơn Mua
+                        </a>
+                        <a th:href="@{/}" class="btn btn-outline-secondary py-2">
+                            Quay về Trang chủ
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

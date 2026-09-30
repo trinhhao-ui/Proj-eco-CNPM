@@ -24,25 +24,25 @@ public class ManagerUserController {
     @GetMapping
     public String list(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate fromDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate toDate,
             @PageableDefault(size = 20) Pageable pageable,
             Model model) {
 
-        if (keyword == null || keyword.isBlank()) {
-            model.addAttribute(
-                    "users",
-                    userService.getAllUsers(pageable)
-            );
-        } else {
-            model.addAttribute(
-                    "users",
-                    userService.searchUsers(
-                            keyword,
-                            pageable
-                    )
-            );
-        }
+        model.addAttribute(
+                "users",
+                userService.filterUsers(keyword, email, fromDate, toDate, pageable)
+        );
 
         model.addAttribute("keyword", keyword);
+        model.addAttribute("email", email);
+        model.addAttribute("fromDate", fromDate);
+        model.addAttribute("toDate", toDate);
+        model.addAttribute("hasFilter", (keyword != null && !keyword.isBlank())
+                || (email != null && !email.isBlank())
+                || fromDate != null
+                || toDate != null);
 
         return "manager/users/list";
     }
@@ -64,6 +64,16 @@ public class ManagerUserController {
                         id,
                         pageable
                 )
+        );
+
+        model.addAttribute(
+                "totalSpent",
+                orderService.getUserTotalSpent(id)
+        );
+
+        model.addAttribute(
+                "totalOrders",
+                orderService.getUserTotalOrders(id)
         );
 
         return "manager/users/detail";

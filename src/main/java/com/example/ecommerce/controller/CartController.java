@@ -35,16 +35,22 @@ public class CartController {
     public String addToCart(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam Long productId,
+            @RequestParam(required = false) Long variantId,
             @RequestParam(defaultValue = "1") Integer quantity,
+            @RequestParam(required = false, defaultValue = "false") boolean buyNow,
             RedirectAttributes redirectAttributes) {
 
         boolean success = cartService.addToCart(
                 userDetails.getUserId(),
                 productId,
+                variantId,
                 quantity
         );
 
         if (success) {
+            if (buyNow) {
+                return "redirect:/checkout";
+            }
             redirectAttributes.addFlashAttribute(
                     "success",
                     "Đã thêm sản phẩm vào giỏ hàng."
@@ -56,6 +62,35 @@ public class CartController {
             );
         }
 
+        return "redirect:/cart";
+    }
+
+    @PostMapping("/items/increase/{cartItemId}")
+    public String increaseItem(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long cartItemId) {
+        cartService.increaseItemQuantity(userDetails.getUserId(), cartItemId);
+        return "redirect:/cart";
+    }
+
+    @PostMapping("/items/decrease/{cartItemId}")
+    public String decreaseItem(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long cartItemId) {
+        cartService.decreaseItemQuantity(userDetails.getUserId(), cartItemId);
+        return "redirect:/cart";
+    }
+
+    @PostMapping("/items/remove/{cartItemId}")
+    public String removeItem(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long cartItemId,
+            RedirectAttributes redirectAttributes) {
+        cartService.removeCartItem(userDetails.getUserId(), cartItemId);
+        redirectAttributes.addFlashAttribute(
+                "success",
+                "Đã xóa sản phẩm khỏi giỏ hàng."
+        );
         return "redirect:/cart";
     }
 

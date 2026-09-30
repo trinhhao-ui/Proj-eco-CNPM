@@ -45,11 +45,19 @@ public class AuthController {
             return "redirect:/auth/register";
         }
 
-        otpService.sendOtp(email, OtpType.REGISTER);
+        boolean sent = otpService.sendOtp(email, OtpType.REGISTER);
+
+        if (!sent) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Không thể gửi mã OTP qua email. Vui lòng kiểm tra lại địa chỉ email hoặc cấu hình hộp thư hệ thống."
+            );
+            return "redirect:/auth/register";
+        }
 
         redirectAttributes.addFlashAttribute(
                 "success",
-                "OTP đã được gửi đến email của bạn."
+                "OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (cả mục Spam)."
         );
 
         return "redirect:/auth/verify-register-otp?email=" + email;
@@ -130,14 +138,23 @@ public class AuthController {
             return "redirect:/auth/forgot-password";
         }
 
-        otpService.sendOtp(
+        boolean sent = otpService.sendOtp(
                 email,
                 OtpType.FORGOT_PASSWORD
         );
 
+        if (!sent) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Không thể gửi mã OTP qua email. Vui lòng thử lại sau hoặc liên hệ hỗ trợ."
+            );
+
+            return "redirect:/auth/forgot-password";
+        }
+
         redirectAttributes.addFlashAttribute(
                 "success",
-                "OTP đã được gửi đến email của bạn."
+                "OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (cả mục Spam)."
         );
 
         return "redirect:/auth/reset-password?email=" + email;

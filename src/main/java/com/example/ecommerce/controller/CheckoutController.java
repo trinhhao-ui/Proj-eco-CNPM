@@ -34,6 +34,7 @@ public class CheckoutController {
     private final OrderService orderService;
     private final PaymentService paymentService;
     private final VnPayService vnPayService;
+    private final com.example.ecommerce.service.NotificationService notificationService;
 
     @GetMapping
     public String checkout(
@@ -51,6 +52,7 @@ public class CheckoutController {
 
         model.addAttribute("user", user);
         model.addAttribute("checkoutRequest", new CheckoutRequest());
+        model.addAttribute("activeDiscounts", discountService.getActiveDiscounts());
 
         return "checkout/checkout";
     }
@@ -108,20 +110,34 @@ public class CheckoutController {
 
         String discountCodeStr = (discount != null) ? discount.getCode() : null;
 
-        Order order =
-                orderService.createOrder(
-                        userId,
-                        request.getRecipientName(),
-                        request.getRecipientPhone(),
-                        request.getShippingAddress(),
-                        discountCodeStr,
-                        discountAmount
-                );
+        Order order;
+        try {
+            order = orderService.createOrder(
+                    userId,
+                    request.getRecipientName(),
+                    request.getRecipientPhone(),
+                    request.getShippingAddress(),
+                    discountCodeStr,
+                    discountAmount
+            );
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    e.getMessage() != null ? e.getMessage() : "Đặt hàng thất bại do sản phẩm không đủ tồn kho."
+            );
+            return "redirect:/cart";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Đặt hàng thất bại: " + e.getMessage()
+            );
+            return "redirect:/checkout";
+        }
 
         if (order == null) {
             redirectAttributes.addFlashAttribute(
                     "error",
-                    "Đặt hàng thất bại. Vui lòng kiểm tra lại tồn kho sản phẩm hoặc thông tin giao hàng."
+                    "Đặt hàng thất bại. Vui lòng kiểm tra lại thông tin giao hàng."
             );
             return "redirect:/checkout";
         }
@@ -136,6 +152,12 @@ public class CheckoutController {
                     discount.getId()
             );
         }
+
+        notificationService.notifyManagers(
+                "Đơn hàng mới #" + order.getId(),
+                "Khách hàng " + (order.getUser() != null ? order.getUser().getName() : "Khách") + " vừa đặt đơn hàng #" + order.getId() + " với tổng giá trị " + (order.getFinalAmount() != null ? String.format("%,d ₫", order.getFinalAmount().longValue()) : "0 ₫") + ".",
+                com.example.ecommerce.enums.NotificationType.ORDER_STATUS
+        );
 
         if (request.getPaymentMethod() == PaymentMethod.VNPAY) {
 
@@ -165,10 +187,8 @@ public class CheckoutController {
 
         BigDecimal subtotal = BigDecimal.ZERO;
         for (com.example.ecommerce.entity.CartItem item : cart.getItems()) {
-            if (item.getProduct() != null && item.getProduct().getPrice() != null && item.getQuantity() != null) {
-                BigDecimal itemTotal = item.getProduct().getPrice()
-                        .multiply(BigDecimal.valueOf(item.getQuantity()));
-                subtotal = subtotal.add(itemTotal);
+            if (item != null) {
+                subtotal = subtotal.add(item.getSubtotal());
             }
         }
         return subtotal;

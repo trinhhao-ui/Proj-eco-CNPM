@@ -1,53 +1,108 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: header('Thông báo của tôi')}"></head>
+<head th:replace="~{fragments/header :: header('Thông báo của tôi - E-Commerce')}"></head>
 <body>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div th:replace="~{fragments/messages :: messages}"></div>
 
 <div class="container my-4">
-    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
-        <div>
-            <h3 class="mb-0">🔔 Thông báo của bạn</h3>
-            <span class="text-muted small" th:if="${unreadCount > 0}">Bạn có <strong th:text="${unreadCount}">0</strong> thông báo chưa đọc.</span>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a th:href="@{/}"><i class="bi bi-house me-1"></i>Trang chủ</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/profile}">Tài khoản</a></li>
+            <li class="breadcrumb-item active">Thông báo</li>
+        </ol>
+    </nav>
+
+    <!-- Header Thông báo -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+            <div>
+                <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                    <i class="bi bi-bell text-warning"></i>
+                    <span>Thông Báo Của Bạn</span>
+                    <span class="badge bg-danger rounded-pill fs-6" th:if="${unreadCount > 0}" th:text="${unreadCount} + ' mới'">0</span>
+                </h3>
+                <p class="text-muted small mb-0" th:if="${unreadCount > 0}">
+                    Bạn có <strong th:text="${unreadCount}">0</strong> thông báo chưa đọc cần chú ý.
+                </p>
+                <p class="text-muted small mb-0" th:unless="${unreadCount > 0}">
+                    Bạn đã xem tất cả các thông báo cập nhật đơn hàng.
+                </p>
+            </div>
+            <div th:if="${unreadCount > 0}">
+                <form th:action="@{/notifications/read-all}" method="post">
+                    <button type="submit" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-check2-all"></i>
+                        <span>Đánh dấu tất cả là đã đọc</span>
+                    </button>
+                </form>
+            </div>
         </div>
-        <form th:if="${unreadCount > 0}" th:action="@{/notifications/read-all}" method="post">
-            <button type="submit" class="btn btn-outline-secondary btn-sm">Đánh dấu tất cả là đã đọc</button>
-        </form>
     </div>
 
-    <div th:if="${notifications != null and notifications.totalElements > 0}">
-        <div class="list-group shadow-sm border mb-4">
-            <div th:each="notif : ${notifications.content}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-start p-3" th:classappend="${!notif.isRead} ? 'bg-light border-start border-4 border-primary'">
-                <div class="ms-2 me-auto">
-                    <div class="fw-bold" th:text="${notif.title}">Tiêu đề thông báo</div>
-                    <div class="text-secondary mt-1" th:text="${notif.message}">Nội dung thông báo</div>
-                    <small class="text-muted" th:text="${#temporals.format(notif.createdAt, 'dd/MM/yyyy HH:mm')}"></small>
+    <!-- Danh sách thông báo -->
+    <div th:if="${notifications != null and notifications.totalElements > 0}" class="card border-0 shadow-sm mb-4">
+        <div class="list-group list-group-flush p-2">
+            <div th:each="notif : ${notifications.content}"
+                 class="list-group-item d-flex justify-content-between align-items-start p-3 rounded-3 mb-2 border-0"
+                 th:classappend="${!notif.isRead} ? 'bg-primary-subtle border-start border-4 border-primary' : 'bg-white'">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="feature-icon-wrapper rounded-circle d-flex align-items-center justify-content-center text-white"
+                         style="width: 40px; height: 40px;"
+                         th:classappend="${!notif.isRead ? 'bg-primary' : 'bg-secondary'}">
+                        <i class="bi bi-receipt" th:if="${notif.type?.name() == 'ORDER_STATUS'}"></i>
+                        <i class="bi bi-info-circle" th:unless="${notif.type?.name() == 'ORDER_STATUS'}"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1 text-dark" th:text="${notif.title}">Tiêu đề</h6>
+                        <p class="text-secondary small mb-2" th:text="${notif.message}">Nội dung thông báo</p>
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i><span th:text="${#temporals.format(notif.createdAt, 'dd/MM/yyyy HH:mm')}">Thời gian</span>
+                        </small>
+                    </div>
                 </div>
-                <form th:if="${!notif.isRead}" th:action="@{/notifications/{id}/read(id=${notif.id})}" method="post" class="ms-3">
-                    <button type="submit" class="btn btn-outline-primary btn-sm">Đã đọc</button>
-                </form>
+
+                <div class="ms-3 flex-shrink-0" th:if="${!notif.isRead}">
+                    <form th:action="@{/notifications/{id}/read(id=${notif.id})}" method="post">
+                        <button type="submit" class="btn btn-outline-primary btn-sm py-1 px-2" title="Đánh dấu đã đọc">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
         <!-- Phân trang -->
-        <nav th:if="${notifications.totalPages > 1}" class="mt-4">
-            <ul class="pagination justify-content-center">
-                <li class="page-item" th:classappend="${notifications.first} ? 'disabled'">
-                    <a class="page-link" th:href="@{/notifications(page=${notifications.number - 1})}">&laquo;</a>
-                </li>
-                <li class="page-item" th:each="i : ${#numbers.sequence(0, notifications.totalPages - 1)}" th:classappend="${i == notifications.number} ? 'active'">
-                    <a class="page-link" th:href="@{/notifications(page=${i})}" th:text="${i + 1}">1</a>
-                </li>
-                <li class="page-item" th:classappend="${notifications.last} ? 'disabled'">
-                    <a class="page-link" th:href="@{/notifications(page=${notifications.number + 1})}">&raquo;</a>
-                </li>
-            </ul>
-        </nav>
+        <div class="card-footer bg-white border-0 py-3" th:if="${notifications.totalPages > 1}">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    <li class="page-item" th:classappend="${notifications.first} ? 'disabled'">
+                        <a class="page-link" th:href="@{/notifications(page=${notifications.number - 1})}">&laquo;</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, notifications.totalPages - 1)}" th:classappend="${i == notifications.number} ? 'active'">
+                        <a class="page-link" th:href="@{/notifications(page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${notifications.last} ? 'disabled'">
+                        <a class="page-link" th:href="@{/notifications(page=${notifications.number + 1})}">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </div>
 
-    <div th:if="${notifications == null or notifications.totalElements == 0}" class="text-center py-5">
-        <p class="text-muted fs-5">Bạn chưa có thông báo nào.</p>
+    <!-- Empty state -->
+    <div th:if="${notifications == null or notifications.totalElements == 0}" class="card border-0 shadow-sm text-center py-5">
+        <div class="card-body py-5">
+            <div class="feature-icon-wrapper bg-light text-muted mx-auto mb-3" style="width: 80px; height: 80px; border-radius: 50%;">
+                <i class="bi bi-bell-slash fs-1"></i>
+            </div>
+            <h4 class="fw-bold mt-2">Chưa có thông báo nào!</h4>
+            <p class="text-muted mb-3">Các thông tin về tiến độ đơn hàng và khuyến mãi sẽ xuất hiện tại đây.</p>
+            <a th:href="@{/}" class="btn btn-primary btn-sm px-4">Về Trang chủ</a>
+        </div>
     </div>
 </div>
 

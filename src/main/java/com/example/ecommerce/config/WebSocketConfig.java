@@ -32,5 +32,11 @@ public class WebSocketConfig
                         "/ws"
                 )
                 .setAllowedOriginPatterns("*");
+
+        registry.addEndpoint(
+                        "/ws"
+                )
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 }

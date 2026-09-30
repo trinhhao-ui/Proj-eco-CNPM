@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/header :: header('Tra Cứu Bảo Hành Điện Tử - Shop Điện Thoại')}"></head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+<div th:replace="~{fragments/messages :: messages}"></div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Banner / Header -->
+            <div class="text-center mb-5">
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold mb-2">
+                    <i class="bi bi-shield-check me-1"></i> Hệ Thống Bảo Hành Điện Tử Chính Hãng
+                </span>
+                <h2 class="fw-bold mt-2">Tra Cứu Thông Tin Bảo Hành</h2>
+                <p class="text-muted">Nhập số IMEI (15 số) của điện thoại hoặc Số điện thoại đặt hàng để kiểm tra thời hạn bảo hành</p>
+            </div>
+
+            <!-- Search Form Card -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4 p-md-5">
+                    <form th:action="@{/warranty}" method="get">
+                        <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden border">
+                            <span class="input-group-text bg-white border-0 text-muted ps-3">
+                                <i class="bi bi-upc-scan fs-4"></i>
+                            </span>
+                            <input type="text"
+                                   name="keyword"
+                                   class="form-control border-0 ps-2"
+                                   placeholder="Nhập mã IMEI hoặc Số điện thoại..."
+                                   th:value="${keyword}"
+                                   required>
+                            <button class="btn btn-primary px-4 fw-bold" type="submit">
+                                <i class="bi bi-search me-1"></i> Tra Cứu
+                            </button>
+                        </div>
+                        <div class="form-text text-center mt-2 small text-muted">
+                            <i class="bi bi-info-circle me-1"></i> Cách lấy IMEI: Bấm phím <code>*#06#</code> trên bàn phím gọi của điện thoại hoặc xem trên vỏ hộp/mặt lưng máy.
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Result: Not Found -->
+            <div th:if="${notFound}" class="alert alert-warning border-0 shadow-sm rounded-3 p-4 text-center">
+                <i class="bi bi-exclamation-triangle-fill fs-1 text-warning d-block mb-2"></i>
+                <h5 class="fw-bold">Không tìm thấy thông tin bảo hành</h5>
+                <p class="mb-0 text-muted small">
+                    Mã IMEI hoặc số điện thoại <strong th:text="${keyword}"></strong> chưa có dữ liệu trên hệ thống hoặc đơn hàng chưa hoàn tất giao hàng.
+                </p>
+            </div>
+
+            <!-- Result: Found -->
+            <div th:if="${warrantyList != null and !warrantyList.isEmpty()}">
+                <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    Kết Quả Tra Cứu (<span th:text="${warrantyList.size()}"></span> thiết bị)
+                </h5>
+
+                <div class="d-flex flex-column gap-3">
+                    <div th:each="w : ${warrantyList}" class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <span class="badge bg-dark px-3 py-2 rounded-pill font-monospace me-2">
+                                    <i class="bi bi-upc me-1"></i> IMEI: <span th:text="${w.imei}"></span>
+                                </span>
+                            </div>
+                            <div>
+                                <span th:if="${!w.isExpired}" class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                                    <i class="bi bi-shield-fill-check me-1"></i> Còn Bảo Hành (còn <span th:text="${w.remainingDays}"></span> ngày)
+                                </span>
+                                <span th:if="${w.isExpired}" class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill fw-bold">
+                                    <i class="bi bi-shield-fill-x me-1"></i> Đã Hết Hạn Bảo Hành
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-7">
+                                    <h4 class="fw-bold text-dark mb-1" th:text="${w.productName}">iPhone 16 Pro Max</h4>
+                                    <p class="text-primary fw-semibold mb-3" th:text="${w.variantName != null ? w.variantName : 'Phiên bản chuẩn'}">256GB - Titan Sa Mạc</p>
+
+                                    <ul class="list-unstyled small text-muted mb-0">
+                                        <li class="mb-1"><i class="bi bi-person me-2 text-dark"></i> Khách hàng: <strong class="text-dark" th:text="${w.recipientName}"></strong></li>
+                                        <li><i class="bi bi-telephone me-2 text-dark"></i> SĐT liên hệ: <strong class="text-dark" th:text="${w.recipientPhone}"></strong></li>
+                                    </ul>
+                                </div>
+
+                                <div class="col-md-5 border-start-md ps-md-4">
+                                    <div class="bg-light rounded-3 p-3">
+                                        <div class="mb-2">
+                                            <span class="text-muted small d-block">Ngày kích hoạt mua hàng:</span>
+                                            <strong class="text-dark" th:text="${#temporals.format(w.purchaseDate, 'dd/MM/yyyy HH:mm')}"></strong>
+                                        </div>
+                                        <div>
+                                            <span class="text-muted small d-block">Hạn bảo hành đến ngày:</span>
+                                            <strong class="text-danger fs-6" th:text="${#temporals.format(w.expiryDate, 'dd/MM/yyyy')}"></strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-light border-0 py-3 px-4 small text-muted d-flex justify-content-between flex-wrap gap-2">
+                            <span><i class="bi bi-clock-history me-1"></i> Thời hạn gói bảo hành tiêu chuẩn: 12 tháng</span>
+                            <span>Hỗ trợ kỹ thuật: <strong>1800 6868</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chính sách bảo hành thông tin -->
+            <div class="card border-0 shadow-sm rounded-4 mt-5">
+                <div class="card-body p-4">
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-bookmark-check-fill text-primary me-2"></i>Quy Định Bảo Hành Điện Thoại Tại Shop</h6>
+                    <div class="row g-3 small text-muted">
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 h-100">
+                                <strong class="text-dark d-block mb-1"><i class="bi bi-arrow-repeat text-success me-1"></i> 1 Đổi 1 Trong 30 Ngày</strong>
+                                Đổi máy mới tương đương nếu có lỗi phần cứng do nhà sản xuất (nguồn, màn hình, mainboard).
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 h-100">
+                                <strong class="text-dark d-block mb-1"><i class="bi bi-tools text-primary me-1"></i> Bảo Hành 12 Tháng</strong>
+                                Miễn phí sửa chữa và thay thế linh kiện chính hãng tại trung tâm ủy quyền toàn quốc.
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 h-100">
+                                <strong class="text-dark d-block mb-1"><i class="bi bi-x-octagon-fill text-danger me-1"></i> Từ Chối Bảo Hành</strong>
+                                Máy có dấu hiệu vào nước, chập cháy nổ, rơi vỡ móp méo cấn màn hình hoặc tự ý can thiệp phần cứng.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

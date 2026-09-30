@@ -57,6 +57,15 @@ public class Order {
     @Builder.Default
     private OrderStatus status = OrderStatus.PENDING;
 
+    @Column(columnDefinition = "TEXT")
+    private String returnReason;
+
+    @Column(length = 500)
+    private String returnImageUrl;
+
+    @Column(length = 100)
+    private String trackingCode;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

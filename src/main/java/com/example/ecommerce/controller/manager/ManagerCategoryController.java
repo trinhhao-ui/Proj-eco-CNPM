@@ -63,12 +63,19 @@ public class ManagerCategoryController {
             @PathVariable Long id,
             RedirectAttributes redirectAttributes) {
 
-        categoryService.deleteCategory(id);
+        boolean deleted = categoryService.deleteCategory(id);
 
-        redirectAttributes.addFlashAttribute(
-                "success",
-                "Đã xóa danh mục."
-        );
+        if (deleted) {
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Đã xóa danh mục."
+            );
+        } else {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Không thể xóa danh mục này vì đang có sản phẩm thuộc danh mục!"
+            );
+        }
 
         return "redirect:/manager/categories";
     }

@@ -133,4 +133,14 @@ public class NotificationService {
 
         return true;
     }
+
+    @Transactional
+    public void notifyManagers(String title, String message, NotificationType type) {
+        Page<User> managers = userRepository.findByRole(com.example.ecommerce.enums.Role.MANAGER, Pageable.unpaged());
+        if (managers != null && !managers.isEmpty()) {
+            for (User manager : managers.getContent()) {
+                createNotification(manager.getId(), title, message, type);
+            }
+        }
+    }
 }

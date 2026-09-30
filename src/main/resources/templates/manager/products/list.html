@@ -1,53 +1,143 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Sản phẩm - Manager</title></head>
-<body>
-<h1>Quản lý Sản phẩm</h1>
-<nav>
-  <a href="/manager/dashboard">Dashboard</a> |
-  <a href="/manager/products/create">+ Thêm sản phẩm</a>
-</nav>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
-<div th:if="${error}" style="color:red" th:text="${error}"></div>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/manager-layout :: manager-head('Quản Lý Sản Phẩm')}"></head>
+<body class="manager-wrapper">
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>ID</th><th>Tên</th><th>Danh mục</th><th>Giá</th><th>Tồn kho</th><th>Trạng thái</th><th>Hành động</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr th:each="p : ${products.content}">
-      <td th:text="${p.id}"></td>
-      <td th:text="${p.name}"></td>
-      <td th:text="${p.category?.name}"></td>
-      <td th:text="${p.price}"></td>
-      <td th:text="${p.stock}"></td>
-      <td th:text="${p.active} ? 'Hoạt động' : 'Ẩn'"></td>
-      <td>
-        <a th:href="@{/manager/products/{id}/edit(id=${p.id})}">Sửa</a>
-        <form th:action="@{/manager/products/{id}/toggle-status(id=${p.id})}" method="post" style="display:inline">
-          <input type="hidden" name="status" th:value="${!p.active}">
-          <button type="submit" th:text="${p.active} ? 'Ẩn' : 'Hiện'"></button>
-        </form>
-        <form th:action="@{/manager/products/{id}/delete(id=${p.id})}" method="post" style="display:inline"
-              onsubmit="return confirm('Xóa sản phẩm này?')">
-          <button type="submit">Xóa</button>
-        </form>
-      </td>
-    </tr>
-    <tr th:if="${products.empty}">
-      <td colspan="7">Chưa có sản phẩm.</td>
-    </tr>
-  </tbody>
-</table>
+<div th:replace="~{fragments/manager-layout :: manager-navbar}"></div>
 
-<div th:if="${products.totalPages > 1}">
-  <span th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}">
-    <a th:href="@{/manager/products(page=${i})}" th:text="${i + 1}"
-       th:style="${i == products.number} ? 'font-weight:bold' : ''"></a>
-  </span>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/manager-layout :: manager-sidebar('products')}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 manager-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">📱 Quản Lý Kho Điện Thoại</h2>
+                    <p class="text-muted small mb-0">Thêm mới, cấu hình biến thể dung lượng/màu sắc, điều chỉnh giá và trạng thái kinh doanh.</p>
+                </div>
+                <div>
+                    <a th:href="@{/manager/products/create}" class="btn btn-primary d-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Thêm Điện Thoại Mới</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Flash alerts -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;">Mã</th>
+                                    <th style="width: 80px;">Hình ảnh</th>
+                                    <th>Dòng điện thoại</th>
+                                    <th>Hãng & Danh mục</th>
+                                    <th>Giá niêm yết</th>
+                                    <th>Tổng tồn kho</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-center" style="width: 200px;">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${products.content}">
+                                    <td class="text-muted fw-bold" th:text="'#' + ${p.id}">#1</td>
+                                    <td>
+                                        <img th:if="${p.imageUrl != null and !p.imageUrl.isEmpty()}" th:src="${p.imageUrl}" class="rounded border" style="width: 50px; height: 50px; object-fit: cover;" alt="Image">
+                                        <div th:unless="${p.imageUrl != null and !p.imageUrl.isEmpty()}" class="bg-light rounded border text-muted small d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                            <i class="bi bi-phone"></i>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-dark" th:text="${p.name}">Tên SP</div>
+                                        <div class="small text-muted" th:if="${p.variants != null and !p.variants.isEmpty()}" th:text="${p.variants.size()} + ' biến thể phiên bản'"></div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary text-white me-1" th:if="${p.brand != null and !p.brand.isEmpty()}" th:text="${p.brand}">Brand</span>
+                                        <span class="badge bg-secondary-subtle text-secondary" th:text="${p.category?.name != null ? p.category.name : 'Chưa phân loại'}">Category</span>
+                                    </td>
+                                    <td class="fw-bold text-danger" th:text="${p.price != null ? #numbers.formatDecimal(p.price, 0, 'COMMA', 0, 'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+                                    <td>
+                                        <span th:classappend="${p.stock > 10 ? 'badge bg-success-subtle text-success' : (p.stock > 0 ? 'badge bg-warning-subtle text-warning' : 'badge bg-danger-subtle text-danger')}"
+                                              th:text="${p.stock} + ' máy'">0 máy</span>
+                                    </td>
+                                    <td>
+                                        <!-- Fix: Use p.status instead of p.active -->
+                                        <span th:if="${p.status}" class="badge bg-success"><i class="bi bi-eye me-1"></i>Đang bán</span>
+                                        <span th:unless="${p.status}" class="badge bg-secondary"><i class="bi bi-eye-slash me-1"></i>Đang ẩn</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <!-- Sửa -->
+                                            <a th:href="@{/manager/products/{id}/edit(id=${p.id})}" class="btn btn-outline-primary" title="Chỉnh sửa">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+
+                                            <!-- Toggle status: Fix p.status -->
+                                            <form th:action="@{/manager/products/{id}/toggle-status(id=${p.id})}" method="post" class="d-inline">
+                                                <input type="hidden" name="status" th:value="${!p.status}">
+                                                <button type="submit" class="btn" th:classappend="${p.status} ? 'btn-outline-warning' : 'btn-outline-success'" th:title="${p.status} ? 'Ẩn sản phẩm' : 'Hiện sản phẩm'">
+                                                    <i th:class="${p.status} ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                                </button>
+                                            </form>
+
+                                            <!-- Xóa -->
+                                            <form th:action="@{/manager/products/{id}/delete(id=${p.id})}" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn sản phẩm này?')">
+                                                <button type="submit" class="btn btn-outline-danger" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${products.empty}">
+                                    <td colspan="8" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                                        Chưa có sản phẩm nào trong hệ thống.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Phân trang -->
+                <div class="card-footer bg-white py-3 border-0" th:if="${products.totalPages > 1}">
+                    <nav>
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            <li class="page-item" th:classappend="${products.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/manager/products(page=${products.number - 1})}">&laquo;</a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}" th:classappend="${i == products.number} ? 'active'">
+                                <a class="page-link" th:href="@{/manager/products(page=${i})}" th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${products.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/manager/products(page=${products.number + 1})}">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
 </div>
+
+<div th:replace="~{fragments/manager-layout :: manager-scripts}"></div>
 </body>
 </html>

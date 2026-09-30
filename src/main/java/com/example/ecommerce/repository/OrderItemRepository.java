@@ -21,4 +21,8 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
             Long productId,
             com.example.ecommerce.enums.OrderStatus status
     );
+
+    java.util.Optional<OrderItem> findFirstByImei(String imei);
+
+    List<OrderItem> findByOrderRecipientPhoneOrderByOrderCreatedAtDesc(String recipientPhone);
 }

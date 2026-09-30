@@ -72,6 +72,32 @@ public class ReviewService {
                 );
     }
 
+    public Long findEligibleOrderIdForReview(Long userId, Long productId) {
+        if (userId == null || productId == null) return null;
+        var deliveredOrders = orderRepository.findByUserIdAndStatusOrderByCreatedAtDesc(
+                userId,
+                OrderStatus.DELIVERED,
+                org.springframework.data.domain.PageRequest.of(0, 50)
+        );
+        if (deliveredOrders != null && deliveredOrders.hasContent()) {
+            for (Order order : deliveredOrders.getContent()) {
+                if (order.getItems() != null) {
+                    boolean hasItem = order.getItems().stream()
+                            .anyMatch(item -> item.getProduct() != null && item.getProduct().getId().equals(productId));
+                    if (hasItem && !reviewRepository.existsByUserIdAndProductIdAndOrderId(userId, productId, order.getId())) {
+                        return order.getId();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean hasUserReviewedProduct(Long userId, Long productId) {
+        if (userId == null || productId == null) return false;
+        return reviewRepository.existsByUserIdAndProductId(userId, productId);
+    }
+
     @Transactional
     public Review createReview(
             Long userId,

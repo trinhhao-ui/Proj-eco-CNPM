@@ -1,51 +1,188 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>Đơn hàng - Manager</title></head>
-<body>
-<h1>Quản lý Đơn hàng</h1>
-<a href="/manager/dashboard">Dashboard</a>
-<hr>
-<div th:if="${success}" style="color:green" th:text="${success}"></div>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/manager-layout :: manager-head('Quản Lý Đơn Hàng')}"></head>
+<body class="manager-wrapper">
 
-<form method="get" action="/manager/orders">
-  <label>Lọc trạng thái:</label>
-  <select name="status" onchange="this.form.submit()">
-    <option value="">-- Tất cả --</option>
-    <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"
-            th:selected="${s == selectedStatus}"></option>
-  </select>
-  <span th:if="${selectedStatus}">
-    <a href="/manager/orders">Bỏ lọc</a>
-  </span>
-</form>
+<div th:replace="~{fragments/manager-layout :: manager-navbar}"></div>
 
-<table border="1" cellpadding="8">
-  <thead>
-    <tr>
-      <th>ID</th><th>Khách hàng</th><th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th><th>Ngày đặt</th><th>Chi tiết</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr th:each="o : ${orders.content}">
-      <td th:text="${o.id}"></td>
-      <td th:text="${o.user?.email}"></td>
-      <td th:text="${o.finalAmount}"></td>
-      <td th:text="${o.payment?.method}"></td>
-      <td th:text="${o.status}"></td>
-      <td th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
-      <td><a th:href="@{/manager/orders/{id}(id=${o.id})}">Xem</a></td>
-    </tr>
-    <tr th:if="${orders.empty}">
-      <td colspan="7">Không có đơn hàng.</td>
-    </tr>
-  </tbody>
-</table>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/manager-layout :: manager-sidebar('orders')}"></div>
 
-<div th:if="${orders.totalPages > 1}">
-  <span th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}">
-    <a th:href="@{/manager/orders(page=${i}, status=${selectedStatus})}" th:text="${i + 1}"
-       th:style="${i == orders.number} ? 'font-weight:bold' : ''"></a>
-  </span>
+        <!-- Main Content -->
+        <main class="col-md-9 col-lg-10 manager-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">📑 Quản Lý Đơn Hàng</h2>
+                    <p class="text-muted small mb-0">Theo dõi, kiểm tra chi tiết, lọc theo ngày đặt và cập nhật tiến độ giao vận cho toàn bộ đơn mua.</p>
+                </div>
+            </div>
+
+            <!-- Flash alerts -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Bộ Lọc Đơn Hàng Nâng Cao: Trạng thái, Ngày đặt, Từ khóa -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-funnel-fill text-primary me-2"></i>Bộ Lọc & Tra Cứu Đơn Hàng</h6>
+                </div>
+                <div class="card-body pt-0 pb-3">
+                    <form method="get" th:action="@{/manager/orders}" class="row g-3">
+                        <!-- Trạng thái -->
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted">Trạng thái đơn:</label>
+                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">-- Tất cả trạng thái --</option>
+                                <option th:each="s : ${statuses}" th:value="${s}" 
+                                        th:text="${s.name() == 'PENDING' ? 'Chờ xử lý' : 
+                                                 (s.name() == 'CONFIRMED' ? 'Đã xác nhận' : 
+                                                 (s.name() == 'SHIPPING' ? 'Đang giao hàng' : 
+                                                 (s.name() == 'DELIVERED' ? 'Giao thành công' : 
+                                                 (s.name() == 'CANCELLED' ? 'Đã hủy' : 
+                                                 (s.name() == 'RETURN_REQUESTED' ? 'Chờ đổi trả/bảo hành' : 
+                                                 (s.name() == 'REFUNDED' ? 'Đã hoàn tiền' : 
+                                                 (s.name() == 'RETURN_REJECTED' ? 'Từ chối đổi trả' : s.name())))))))}"
+                                        th:selected="${s == selectedStatus}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Ngày đặt: Từ ngày -->
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted">Đặt từ ngày:</label>
+                            <input type="date" name="fromDate" class="form-control form-control-sm" th:value="${fromDate}">
+                        </div>
+
+                        <!-- Ngày đặt: Đến ngày -->
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold text-muted">Đến ngày:</label>
+                            <input type="date" name="toDate" class="form-control form-control-sm" th:value="${toDate}">
+                        </div>
+
+                        <!-- Từ khóa tìm kiếm: Mã đơn, tên người nhận, SĐT -->
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted">Từ khóa (Mã đơn / Tên / SĐT):</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                <input type="text" name="keyword" class="form-control" placeholder="Mã #, người nhận, email..." th:value="${keyword}">
+                            </div>
+                        </div>
+
+                        <!-- Nút thao tác -->
+                        <div class="col-md-2 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                                <i class="bi bi-filter me-1"></i>Lọc
+                            </button>
+                            <a th:if="${hasFilter}" th:href="@{/manager/orders}" class="btn btn-outline-danger btn-sm" title="Hủy bộ lọc">
+                                <i class="bi bi-x-circle"></i>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách đơn -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Tổng số đơn hàng: <strong class="text-dark" th:text="${orders.totalElements}">0</strong> đơn</span>
+                    <a th:if="${hasFilter}" th:href="@{/manager/orders}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Xem tất cả
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 80px;">Mã đơn</th>
+                                    <th>Khách hàng</th>
+                                    <th>Người nhận</th>
+                                    <th>Tổng thanh toán</th>
+                                    <th>Thanh toán</th>
+                                    <th>Trạng thái đơn</th>
+                                    <th>Ngày đặt</th>
+                                    <th class="text-center" style="width: 110px;">Chi tiết</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="o : ${orders.content}">
+                                    <td class="fw-bold text-primary" th:text="'#' + ${o.id}">#1</td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark" th:text="${o.user?.email}">user@mail.com</div>
+                                    </td>
+                                    <td>
+                                        <div class="text-dark fw-medium" th:text="${o.recipientName}">Nguyễn Văn A</div>
+                                        <small class="text-muted" th:text="${o.recipientPhone}">0901234567</small>
+                                    </td>
+                                    <td class="fw-bold text-danger" th:text="${o.finalAmount != null ? #numbers.formatDecimal(o.finalAmount, 0, 'COMMA', 0, 'POINT') + ' ₫' : '0 ₫'}">0 ₫</td>
+                                    <td>
+                                        <span class="badge" 
+                                              th:classappend="${o.payment?.method?.name() == 'VNPAY' ? 'bg-primary' : 'bg-secondary'}" 
+                                              th:text="${o.payment?.method?.name() == 'COD' ? 'Tiền mặt (COD)' : (o.payment?.method?.name() == 'VNPAY' ? 'VNPAY' : o.payment?.method)}">COD</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge"
+                                              th:classappend="${o.status.name() == 'PENDING' ? 'bg-warning text-dark' : 
+                                                              (o.status.name() == 'CONFIRMED' ? 'bg-info text-dark' : 
+                                                              (o.status.name() == 'SHIPPING' ? 'bg-primary' : 
+                                                              (o.status.name() == 'DELIVERED' ? 'bg-success' : 
+                                                              (o.status.name() == 'CANCELLED' ? 'bg-danger' : 
+                                                              (o.status.name() == 'RETURN_REQUESTED' ? 'bg-warning text-dark' : 
+                                                              (o.status.name() == 'REFUNDED' ? 'bg-secondary' : 
+                                                              (o.status.name() == 'RETURN_REJECTED' ? 'bg-dark' : 'bg-secondary')))))))}"
+                                              th:text="${o.status.name() == 'PENDING' ? 'Chờ xử lý' : 
+                                                      (o.status.name() == 'CONFIRMED' ? 'Đã xác nhận' : 
+                                                      (o.status.name() == 'SHIPPING' ? 'Đang giao hàng' : 
+                                                      (o.status.name() == 'DELIVERED' ? 'Giao thành công' : 
+                                                      (o.status.name() == 'CANCELLED' ? 'Đã hủy' : 
+                                                      (o.status.name() == 'RETURN_REQUESTED' ? 'Chờ đổi trả/bảo hành' : 
+                                                      (o.status.name() == 'REFUNDED' ? 'Đã hoàn tiền' : 
+                                                      (o.status.name() == 'RETURN_REJECTED' ? 'Từ chối đổi trả' : o.status.name())))))))}">PENDING</span>
+                                    </td>
+                                    <td class="text-muted small" th:text="${#temporals.format(o.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                                    <td class="text-center">
+                                        <a th:href="@{/manager/orders/{id}(id=${o.id})}" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm">
+                                            <i class="bi bi-eye"></i>
+                                            <span>Xem đơn</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${orders.empty}">
+                                    <td colspan="8" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                                        Không tìm thấy đơn hàng nào phù hợp với bộ lọc.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Phân trang duy trì các tham số lọc -->
+                <div class="card-footer bg-white py-3 border-0" th:if="${orders.totalPages > 1}">
+                    <nav>
+                        <ul class="pagination pagination-sm justify-content-center mb-0">
+                            <li class="page-item" th:classappend="${orders.first} ? 'disabled'">
+                                <a class="page-link" th:href="@{/manager/orders(page=${orders.number - 1}, status=${selectedStatus}, fromDate=${fromDate}, toDate=${toDate}, keyword=${keyword})}">&laquo;</a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, orders.totalPages - 1)}" th:classappend="${i == orders.number} ? 'active'">
+                                <a class="page-link" th:href="@{/manager/orders(page=${i}, status=${selectedStatus}, fromDate=${fromDate}, toDate=${toDate}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${orders.last} ? 'disabled'">
+                                <a class="page-link" th:href="@{/manager/orders(page=${orders.number + 1}, status=${selectedStatus}, fromDate=${fromDate}, toDate=${toDate}, keyword=${keyword})}">&raquo;</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    </div>
 </div>
+
+<div th:replace="~{fragments/manager-layout :: manager-scripts}"></div>
 </body>
 </html>

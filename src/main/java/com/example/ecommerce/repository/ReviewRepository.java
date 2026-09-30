@@ -35,5 +35,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             Long orderId
     );
 
+    boolean existsByUserIdAndProductId(
+            Long userId,
+            Long productId
+    );
+
     long countByProductId(Long productId);
 }

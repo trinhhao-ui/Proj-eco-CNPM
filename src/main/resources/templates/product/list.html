@@ -1,64 +1,291 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/header :: header('Danh sách sản phẩm')}"></head>
+<head th:replace="~{fragments/header :: header('Kho Điện Thoại Chính Hãng - Hệ Thống Bán Lẻ')}"></head>
 <body>
+
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 <div th:replace="~{fragments/messages :: messages}"></div>
 
 <div class="container my-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a th:href="@{/}"><i class="bi bi-house me-1"></i>Trang chủ</a></li>
+            <li class="breadcrumb-item active">Điện thoại di động</li>
+            <li class="breadcrumb-item active" th:if="${selectedBrand != null and !selectedBrand.isEmpty()}" th:text="${selectedBrand}">Brand</li>
+            <li class="breadcrumb-item active" th:if="${keyword != null and !keyword.isEmpty()}" th:text="'Tìm kiếm: ' + ${keyword}">Search</li>
+        </ol>
+    </nav>
+
+    <!-- Thanh Chọn Nhanh Thương Hiệu (Brand Quick Pills) -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="small fw-bold text-muted me-2"><i class="bi bi-tag-fill me-1 text-primary"></i>Chọn hãng nhanh:</span>
+                <a th:href="@{/products(sort=${selectedSort})}"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:classappend="${selectedBrand == null or selectedBrand.isEmpty()} ? 'btn-primary' : 'btn-outline-secondary'">
+                    Tất cả hãng
+                </a>
+                <a th:href="@{/products(brand='Apple', sort=${selectedSort})}"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:classappend="${selectedBrand == 'Apple'} ? 'btn-dark text-white' : 'btn-outline-secondary'">
+                    <i class="bi bi-apple me-1"></i>Apple (iPhone)
+                </a>
+                <a th:href="@{/products(brand='Samsung', sort=${selectedSort})}"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:classappend="${selectedBrand == 'Samsung'} ? 'btn-primary text-white' : 'btn-outline-secondary'">
+                    Samsung
+                </a>
+                <a th:href="@{/products(brand='Xiaomi', sort=${selectedSort})}"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:classappend="${selectedBrand == 'Xiaomi'} ? 'btn-warning text-dark' : 'btn-outline-secondary'">
+                    Xiaomi
+                </a>
+                <a th:href="@{/products(brand='OPPO', sort=${selectedSort})}"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:classappend="${selectedBrand == 'OPPO'} ? 'btn-success text-white' : 'btn-outline-secondary'">
+                    OPPO
+                </a>
+                <a th:href="@{/products(brand='Google', sort=${selectedSort})}"
+                   class="btn btn-sm rounded-pill px-3"
+                   th:classappend="${selectedBrand == 'Google'} ? 'btn-danger text-white' : 'btn-outline-secondary'">
+                    Google Pixel
+                </a>
+                <!-- Các thương hiệu khác trích xuất động từ database -->
+                <th:block th:each="b : ${availableBrands}">
+                    <a th:if="${b != 'Apple' and b != 'Samsung' and b != 'Xiaomi' and b != 'OPPO' and b != 'Google' and b != null and !b.isBlank()}"
+                       th:href="@{/products(brand=${b}, sort=${selectedSort})}"
+                       class="btn btn-sm rounded-pill px-3"
+                       th:classappend="${selectedBrand == b} ? 'btn-info text-dark' : 'btn-outline-secondary'"
+                       th:text="${b}">
+                    </a>
+                </th:block>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khối Bộ Lọc Thông Số Chuyên Sâu (Comprehensive Phone Spec Filter) -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3 border-0">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                    <i class="bi bi-funnel-fill text-primary"></i>
+                    <span>Bộ Lọc Thông Số Kỹ Thuật & Mức Giá</span>
+                </h6>
+                <div class="d-flex align-items-center gap-2">
+                    <a th:href="@{/compare}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 shadow-sm">
+                        <i class="bi bi-arrow-left-right text-primary"></i>
+                        <span>So sánh 2 điện thoại</span>
+                    </a>
+                    <a th:if="${hasFilter}" th:href="@{/products}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-x-circle me-1"></i>Xóa tất cả bộ lọc
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body pt-0 pb-3">
+            <form th:action="@{/products}" method="get" id="phoneFilterForm" class="row g-3">
+                <!-- Giữ lại keyword tìm kiếm nếu có -->
+                <input type="hidden" name="keyword" th:value="${keyword}">
+
+                <!-- Lọc Hãng (Brand) -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label small fw-bold text-muted">Thương hiệu:</label>
+                    <select name="brand" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Tất cả hãng</option>
+                        <option value="Apple" th:selected="${selectedBrand == 'Apple'}">Apple</option>
+                        <option value="Samsung" th:selected="${selectedBrand == 'Samsung'}">Samsung</option>
+                        <option value="Xiaomi" th:selected="${selectedBrand == 'Xiaomi'}">Xiaomi</option>
+                        <option value="OPPO" th:selected="${selectedBrand == 'OPPO'}">OPPO</option>
+                        <option value="Google" th:selected="${selectedBrand == 'Google'}">Google Pixel</option>
+                        <option th:each="b : ${availableBrands}"
+                                th:if="${b != 'Apple' and b != 'Samsung' and b != 'Xiaomi' and b != 'OPPO' and b != 'Google' and b != null and !b.isBlank()}"
+                                th:value="${b}"
+                                th:text="${b}"
+                                th:selected="${selectedBrand == b}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Lọc Khoảng giá -->
+                <div class="col-6 col-md-3 col-lg-3">
+                    <label class="form-label small fw-bold text-muted">Mức giá:</label>
+                    <select name="priceRange" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Tất cả mức giá</option>
+                        <option value="under_5m" th:selected="${selectedPriceRange == 'under_5m'}">Dưới 5 triệu</option>
+                        <option value="5m_10m" th:selected="${selectedPriceRange == '5m_10m'}">Từ 5 - 10 triệu</option>
+                        <option value="10m_20m" th:selected="${selectedPriceRange == '10m_20m'}">Từ 10 - 20 triệu</option>
+                        <option value="above_20m" th:selected="${selectedPriceRange == 'above_20m'}">Trên 20 triệu (Cao cấp)</option>
+                    </select>
+                </div>
+
+                <!-- Lọc RAM -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label small fw-bold text-muted">Dung lượng RAM:</label>
+                    <select name="ram" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Tất cả RAM</option>
+                        <option value="4GB" th:selected="${selectedRam == '4GB'}">4GB</option>
+                        <option value="6GB" th:selected="${selectedRam == '6GB'}">6GB</option>
+                        <option value="8GB" th:selected="${selectedRam == '8GB'}">8GB</option>
+                        <option value="12GB" th:selected="${selectedRam == '12GB'}">12GB</option>
+                        <option value="16GB" th:selected="${selectedRam == '16GB'}">16GB</option>
+                    </select>
+                </div>
+
+                <!-- Lọc Bộ nhớ trong (Storage) -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <label class="form-label small fw-bold text-muted">Bộ nhớ ROM:</label>
+                    <select name="storage" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="">Tất cả bộ nhớ</option>
+                        <option value="64GB" th:selected="${selectedStorage == '64GB'}">64GB</option>
+                        <option value="128GB" th:selected="${selectedStorage == '128GB'}">128GB</option>
+                        <option value="256GB" th:selected="${selectedStorage == '256GB'}">256GB</option>
+                        <option value="512GB" th:selected="${selectedStorage == '512GB'}">512GB</option>
+                        <option value="1TB" th:selected="${selectedStorage == '1TB'}">1TB</option>
+                    </select>
+                </div>
+
+                <!-- Sắp xếp theo -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label small fw-bold text-muted">Sắp xếp:</label>
+                    <div class="input-group input-group-sm">
+                        <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="newest" th:selected="${selectedSort == 'newest' or selectedSort == null}">Mới nhất</option>
+                            <option value="price_asc" th:selected="${selectedSort == 'price_asc'}">Giá: Thấp đến cao</option>
+                            <option value="price_desc" th:selected="${selectedSort == 'price_desc'}">Giá: Cao đến thấp</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search me-1"></i>Lọc
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="row">
-        <!-- Sidebar lọc danh mục -->
-        <div class="col-md-3 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white fw-bold">Danh mục</div>
-                <div class="list-group list-group-flush">
-                    <a th:href="@{/products}" class="list-group-item list-group-item-action" th:classappend="${category == null} ? 'active'">Tất cả sản phẩm</a>
-                    <a th:each="cat : ${categories}" th:href="@{/categories/{id}(id=${cat.id})}" class="list-group-item list-group-item-action" th:classappend="${category != null and category.id == cat.id} ? 'active'" th:text="${cat.name}">Danh mục</a>
+        <!-- Sidebar trái: Phân khúc & Cam kết dịch vụ -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm sticky-top mb-4" style="top: 80px;">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-grid-fill text-primary"></i>
+                        <span>Phân Khúc Điện Thoại</span>
+                    </h6>
+                </div>
+                <div class="list-group list-group-flush p-2 pt-0">
+                    <a th:href="@{/products}"
+                       class="list-group-item list-group-item-action rounded-3 mb-1 border-0 d-flex align-items-center justify-content-between"
+                       th:classappend="${selectedBrand == null and selectedPriceRange == null and (keyword == null or keyword.isEmpty())} ? 'active bg-primary text-white' : ''">
+                        <span><i class="bi bi-phone me-2"></i>Tất cả điện thoại</span>
+                        <i class="bi bi-chevron-right small opacity-50"></i>
+                    </a>
+                    <a th:each="cat : ${categories}"
+                       th:href="@{/categories/{id}(id=${cat.id})}"
+                       class="list-group-item list-group-item-action rounded-3 mb-1 border-0 d-flex align-items-center justify-content-between">
+                        <span><i class="bi bi-folder2 me-2"></i><span th:text="${cat.name}">Danh mục</span></span>
+                        <i class="bi bi-chevron-right small opacity-50"></i>
+                    </a>
+                </div>
+
+                <!-- Cam kết chất lượng dịch vụ -->
+                <div class="card-body bg-light border-top p-3 rounded-bottom">
+                    <h6 class="fw-bold small text-dark mb-2"><i class="bi bi-shield-check text-success me-1"></i>Quyền Lợi Khách Hàng:</h6>
+                    <ul class="list-unstyled small text-muted mb-0 lh-lg">
+                        <li><i class="bi bi-check2 text-success me-1"></i>Máy mới 100% chính hãng</li>
+                        <li><i class="bi bi-check2 text-success me-1"></i>Bảo hành 12 tháng tại hãng</li>
+                        <li><i class="bi bi-check2 text-success me-1"></i>Lỗi 1 đổi 1 trong 30 ngày</li>
+                        <li><i class="bi bi-check2 text-success me-1"></i>Giao hỏa tốc miễn phí</li>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Danh sách sản phẩm -->
-        <div class="col-md-9">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 th:if="${category != null}" th:text="'Danh mục: ' + ${category.name}"></h4>
-                <h4 th:if="${keyword != null and !keyword.isEmpty()}" th:text="'Kết quả tìm kiếm: &quot;' + ${keyword} + '&quot;'"></h4>
-                <h4 th:if="${category == null and (keyword == null or keyword.isEmpty())}">Tất cả sản phẩm</h4>
-                <span class="text-muted" th:text="${products.totalElements} + ' sản phẩm'"></span>
-            </div>
-
-            <div class="row row-cols-1 row-cols-md-3 g-4">
-                <div class="col" th:each="product : ${products.content}">
-                    <div class="card h-100 shadow-sm">
-                        <img th:if="${product.imageUrl != null and !product.imageUrl.isEmpty()}" th:src="${product.imageUrl}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Product image">
-                        <div th:unless="${product.imageUrl != null and !product.imageUrl.isEmpty()}" class="bg-secondary text-white text-center py-5">Chưa có ảnh</div>
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title text-truncate" th:text="${product.name}">Tên</h5>
-                            <p class="card-text text-danger fw-bold fs-5 mb-1" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT') + ' ₫'}">0 ₫</p>
-                            <p class="card-text text-muted small mb-3" th:text="'Còn: ' + ${product.stock} + ' sản phẩm'"></p>
-                            <div class="mt-auto">
-                                <a th:href="@{/products/{id}(id=${product.id})}" class="btn btn-primary btn-sm w-100">Xem chi tiết</a>
-                            </div>
+        <!-- Cột hiển thị Danh sách sản phẩm -->
+        <div class="col-lg-9">
+            <!-- Header kết quả tìm kiếm & filter active tags -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-3">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-2">
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark" th:if="${keyword != null and !keyword.isEmpty()}">
+                                <i class="bi bi-search text-primary me-2"></i>Kết quả cho: &quot;<span th:text="${keyword}"></span>&quot;
+                            </h5>
+                            <h5 class="fw-bold mb-0 text-dark" th:if="${keyword == null or keyword.isEmpty()}">
+                                <i class="bi bi-phone text-primary me-2"></i>Danh sách dòng máy điện thoại
+                            </h5>
                         </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-light text-secondary border fs-6 fw-normal" th:text="${products.totalElements} + ' dòng máy'">0 dòng máy</span>
+                            <a th:if="${hasFilter}" th:href="@{/products}" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-x-circle me-1"></i>Xóa lọc
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Hiển thị các tiêu chí đang được áp dụng -->
+                    <div th:if="${hasFilter}" class="d-flex flex-wrap gap-2 pt-2 border-top">
+                        <span class="small text-muted align-self-center">Đang lọc theo:</span>
+                        <span th:if="${selectedBrand != null and !selectedBrand.isEmpty()}" class="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1">
+                            Hãng: <strong th:text="${selectedBrand}"></strong>
+                            <a th:href="@{/products(priceRange=${selectedPriceRange}, ram=${selectedRam}, storage=${selectedStorage}, sort=${selectedSort}, keyword=${keyword})}" class="text-primary text-decoration-none ms-1">&times;</a>
+                        </span>
+                        <span th:if="${selectedPriceRange != null and !selectedPriceRange.isEmpty()}" class="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1">
+                            Giá:
+                            <strong th:if="${selectedPriceRange == 'under_5m'}">&lt; 5 triệu</strong>
+                            <strong th:if="${selectedPriceRange == '5m_10m'}">5 - 10 triệu</strong>
+                            <strong th:if="${selectedPriceRange == '10m_20m'}">10 - 20 triệu</strong>
+                            <strong th:if="${selectedPriceRange == 'above_20m'}">&gt; 20 triệu</strong>
+                            <a th:href="@{/products(brand=${selectedBrand}, ram=${selectedRam}, storage=${selectedStorage}, sort=${selectedSort}, keyword=${keyword})}" class="text-primary text-decoration-none ms-1">&times;</a>
+                        </span>
+                        <span th:if="${selectedRam != null and !selectedRam.isEmpty()}" class="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1">
+                            RAM: <strong th:text="${selectedRam}"></strong>
+                            <a th:href="@{/products(brand=${selectedBrand}, priceRange=${selectedPriceRange}, storage=${selectedStorage}, sort=${selectedSort}, keyword=${keyword})}" class="text-primary text-decoration-none ms-1">&times;</a>
+                        </span>
+                        <span th:if="${selectedStorage != null and !selectedStorage.isEmpty()}" class="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1">
+                            ROM: <strong th:text="${selectedStorage}"></strong>
+                            <a th:href="@{/products(brand=${selectedBrand}, priceRange=${selectedPriceRange}, ram=${selectedRam}, sort=${selectedSort}, keyword=${keyword})}" class="text-primary text-decoration-none ms-1">&times;</a>
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div th:if="${products.totalElements == 0}" class="alert alert-info mt-4 text-center">
-                Không tìm thấy sản phẩm nào.
+            <!-- Grid danh sách sản phẩm -->
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" th:if="${products.totalElements > 0}">
+                <div class="col" th:each="product : ${products.content}">
+                    <div th:replace="~{fragments/product-card :: product-card(${product})}"></div>
+                </div>
             </div>
 
-            <!-- Phân trang -->
-            <nav th:if="${products.totalPages > 1}" class="mt-4">
+            <!-- Empty state nếu không tìm thấy máy -->
+            <div th:if="${products.totalElements == 0}" class="card border-0 shadow-sm text-center py-5">
+                <div class="card-body">
+                    <i class="bi bi-phone text-muted" style="font-size: 3.5rem;"></i>
+                    <h5 class="fw-bold mt-3 mb-1">Không tìm thấy mẫu điện thoại phù hợp với tiêu chí!</h5>
+                    <p class="text-muted small mb-3">Hãy thử bỏ bớt bộ lọc hoặc chọn mức giá / dung lượng RAM khác.</p>
+                    <a th:href="@{/products}" class="btn btn-primary btn-sm px-4">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Xem tất cả điện thoại
+                    </a>
+                </div>
+            </div>
+
+            <!-- Phân trang duy trì các tham số lọc -->
+            <nav th:if="${products.totalPages > 1}" class="mt-5">
                 <ul class="pagination justify-content-center">
                     <li class="page-item" th:classappend="${products.first} ? 'disabled'">
-                        <a class="page-link" th:href="@{/products(page=${products.number - 1}, keyword=${keyword})}">&laquo;</a>
+                        <a class="page-link"
+                           th:href="@{/products(page=${products.number - 1}, keyword=${keyword}, brand=${selectedBrand}, priceRange=${selectedPriceRange}, ram=${selectedRam}, storage=${selectedStorage}, sort=${selectedSort})}">&laquo;</a>
                     </li>
-                    <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}" th:classappend="${i == products.number} ? 'active'">
-                        <a class="page-link" th:href="@{/products(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, products.totalPages - 1)}"
+                        th:classappend="${i == products.number} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/products(page=${i}, keyword=${keyword}, brand=${selectedBrand}, priceRange=${selectedPriceRange}, ram=${selectedRam}, storage=${selectedStorage}, sort=${selectedSort})}"
+                           th:text="${i + 1}">1</a>
                     </li>
                     <li class="page-item" th:classappend="${products.last} ? 'disabled'">
-                        <a class="page-link" th:href="@{/products(page=${products.number + 1}, keyword=${keyword})}">&raquo;</a>
+                        <a class="page-link"
+                           th:href="@{/products(page=${products.number + 1}, keyword=${keyword}, brand=${selectedBrand}, priceRange=${selectedPriceRange}, ram=${selectedRam}, storage=${selectedStorage}, sort=${selectedSort})}">&raquo;</a>
                     </li>
                 </ul>
             </nav>
